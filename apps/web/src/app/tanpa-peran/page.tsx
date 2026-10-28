@@ -8,7 +8,9 @@ export default function NoRole() {
         <p className="mt-2 text-sm text-muted">
           Minta admin sekolah menambahkan peran untuk akun ini (misalnya Guru, Murid, atau Orang Tua), lalu muat ulang halaman.
         </p>
-        <Link href="/login" className="mt-6 inline-block text-sm font-semibold text-brand">Kembali ke halaman masuk</Link>
+        <p className="mt-4 text-sm text-muted">Anda pengelola sekolah dan ingin mulai memakai SekolahApp?</p>
+        <Link href="/sekolah-baru" className="mt-2 inline-block rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white">Daftarkan sekolah baru</Link>
+        <div><Link href="/login" className="mt-6 inline-block text-sm font-semibold text-brand">Kembali ke halaman masuk</Link></div>
       </div>
     </main>
   );

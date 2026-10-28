@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { getSession, ROLE_LABEL } from "@/lib/session";
-import { NAV } from "@/lib/nav";
+import { NAV, PLATFORM_NAV, foundationNav } from "@/lib/nav";
 import { NavLinks } from "@/components/nav-links";
 import { switchRole, signOut } from "./actions";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { profile, roles, active, supabase, user } = await getSession();
+  const { profile, roles, active, supabase, user, scopes } = await getSession();
   const { count: unread } = await supabase.from("notifications")
     .select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null);
   const nav = active ? NAV[active.role] : [];
@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="lg:grid lg:min-h-screen lg:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="border-b border-line bg-sheet lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-5">
-          <Link href="/" className="text-lg font-extrabold tracking-tight text-ink">
+          <Link href="/mulai" className="text-lg font-extrabold tracking-tight text-ink">
             Sekolah<span className="text-accent">App</span>
           </Link>
           <Link href="/notifikasi" className="relative rounded-md px-2 py-1 text-sm font-semibold text-muted hover:bg-paper" aria-label="Notifikasi">
@@ -46,7 +46,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
         )}
 
-        <NavLinks items={nav} />
+        {!!nav.length && <NavLinks items={nav} />}
+        {scopes.platform && (
+          <div className="border-t border-line pt-3">
+            <div className="px-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted lg:px-5">Pemilik Platform</div>
+            <NavLinks items={PLATFORM_NAV} />
+          </div>
+        )}
+        {!!scopes.foundations.length && (
+          <div className="border-t border-line pt-3">
+            <div className="px-4 pb-1 text-xs font-semibold uppercase tracking-wide text-muted lg:px-5">Yayasan</div>
+            <NavLinks items={foundationNav(scopes.foundations)} />
+          </div>
+        )}
+        {!roles.length && !scopes.platform && !scopes.foundations.length && (
+          <NavLinks items={[{ href: "/sekolah-baru", label: "Daftarkan sekolah" }]} />
+        )}
 
         <div className="border-t border-line px-4 py-4 text-sm lg:px-5">
           <Link href="/profil" className="block truncate font-semibold text-ink hover:text-brand">{profile?.full_name || user.email}</Link>

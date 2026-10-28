@@ -8,7 +8,7 @@ export async function switchRole(fd: FormData) {
   const value = String(fd.get("role") ?? "");
   const [, role] = value.split("|");
   (await cookies()).set(ACTIVE_ROLE_COOKIE, value, { httpOnly: true, sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
-  redirect(ROLE_HOME[role as Role] ?? "/");
+  redirect(ROLE_HOME[role as Role] ?? "/mulai");
 }
 
 export async function signOut() {

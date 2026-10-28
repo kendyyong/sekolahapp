@@ -20,7 +20,8 @@ export async function proxy(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  const isPublic = request.nextUrl.pathname.startsWith("/login");
+  const path = request.nextUrl.pathname;
+  const isPublic = path === "/" || path.startsWith("/login") || path.startsWith("/daftar");
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

@@ -18,10 +18,10 @@ create table if not exists auth.users (
 );
 
 create or replace function auth.uid() returns uuid language sql stable as $$
-  select nullif(current_setting('request.jwt.claims', true)::json->>'sub', '')::uuid
+  select nullif(nullif(current_setting('request.jwt.claims', true), '')::json->>'sub', '')::uuid
 $$;
 create or replace function auth.role() returns text language sql stable as $$
-  select coalesce(current_setting('request.jwt.claims', true)::json->>'role', 'anon')
+  select coalesce(nullif(current_setting('request.jwt.claims', true), '')::json->>'role', 'anon')
 $$;
 
 create schema if not exists storage;

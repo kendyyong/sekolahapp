@@ -13,17 +13,21 @@ insert into auth.users (instance_id, id, aud, role, email, encrypted_password, e
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000b2', 'authenticated', 'authenticated', 'bela@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Bela Anjani"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000b3', 'authenticated', 'authenticated', 'citra@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Citra Lestari"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000b4', 'authenticated', 'authenticated', 'dodi@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Dodi Saputra"}', now(), now(), '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000c1', 'authenticated', 'authenticated', 'ortu.andi@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Ibu Maya (Orang tua Andi)"}', now(), now(), '', '', '', '');
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000c1', 'authenticated', 'authenticated', 'ortu.andi@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Ibu Maya (Orang tua Andi)"}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000f1', 'authenticated', 'authenticated', 'yayasan@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"H. Rahmat (Ketua Yayasan)"}', now(), now(), '', '', '', '');
 
 insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
 select gen_random_uuid(), id, id::text, jsonb_build_object('sub', id::text, 'email', email, 'email_verified', true), 'email', now(), now(), now() from auth.users;
 
 insert into public.platform_admins values ('00000000-0000-0000-0000-000000000001');
 
-insert into public.schools (id, name, slug, level, plan, settings) values
-  ('00000000-0000-0000-0000-00000000aaaa', 'SMP Harapan Bangsa', 'smp-harapan-bangsa', 'SMP', 'pro',
+insert into public.foundations (id, name) values ('00000000-0000-0000-0000-0000000000ff', 'Yayasan Harapan Nusantara');
+insert into public.foundation_admins (foundation_id, user_id) values ('00000000-0000-0000-0000-0000000000ff', '00000000-0000-0000-0000-0000000000f1');
+
+insert into public.schools (id, foundation_id, name, slug, level, plan, settings) values
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000ff', 'SMP Harapan Bangsa', 'smp-harapan-bangsa', 'SMP', 'pro',
    '{"school_start_time":"07:00","late_after_minutes":15,"geofence":null,"annual_leave_days":12,"student_leave_escalate_days":3,"invoice_due_day":10,"late_fee_amount":10000}'),
-  ('00000000-0000-0000-0000-00000000bbbb', 'SD Tunas Mekar', 'sd-tunas-mekar', 'SD', 'basic', default);
+  ('00000000-0000-0000-0000-00000000bbbb', '00000000-0000-0000-0000-0000000000ff', 'SD Tunas Mekar', 'sd-tunas-mekar', 'SD', 'basic', default);
 
 insert into public.memberships (school_id, user_id, role) values
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a1', 'school_admin'),
