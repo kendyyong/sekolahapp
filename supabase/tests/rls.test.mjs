@@ -85,3 +85,21 @@ test('pembayaran tidak bisa dibuat langsung oleh orang tua', async () => {
     as(db, U.ortuAndi, `insert into payments (school_id, invoice_id, amount, method, status) values ($1, $2, 475000, 'cash', 'paid')`, [S.A, inv.id]),
     /row-level security/);
 });
+
+test('orang tua melihat nama guru di sekolahnya, tetapi bukan profil orang tua/murid lain', async () => {
+  const rows = await as(db, U.ortuAndi, 'select id from profiles');
+  const ids = rows.map((r) => r.id);
+  assert.ok(ids.includes(U.guru1), 'wali kelas terlihat');
+  assert.ok(ids.includes(U.ortuAndi), 'diri sendiri terlihat');
+  assert.ok(!ids.includes(U.bela), 'murid lain tidak terlihat');
+  assert.ok(!ids.includes(U.adminB), 'staf sekolah lain tidak terlihat');
+});
+
+test('murid tidak melihat profil teman sekelas, guru melihat semua anggota sekolahnya', async () => {
+  const murid = (await as(db, U.andi, 'select id from profiles')).map((r) => r.id);
+  assert.ok(!murid.includes(U.bela));
+  assert.ok(murid.includes(U.guru1));
+  const guru = (await as(db, U.guru2, 'select id from profiles')).map((r) => r.id);
+  assert.ok(guru.includes(U.ortuAndi) && guru.includes(U.bela));
+  assert.ok(!guru.includes(U.muridB));
+});
