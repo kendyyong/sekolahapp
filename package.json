@@ -1,0 +1,13 @@
+{
+  "name": "sekolahapp",
+  "private": true,
+  "workspaces": ["apps/web"],
+  "scripts": {
+    "db:test": "./scripts/db-test-reset.sh && node --test --test-concurrency=1 supabase/tests/*.test.mjs",
+    "web:dev": "npm run dev -w apps/web",
+    "web:build": "npm run build -w apps/web"
+  },
+  "devDependencies": {
+    "pg": "^8.13.1"
+  }
+}
