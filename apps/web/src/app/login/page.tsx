@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button, Field, Flash, Input } from "@/components/ui";
@@ -12,11 +13,13 @@ async function signIn(fd: FormData) {
     email: String(fd.get("email") ?? "").trim(),
     password: String(fd.get("password") ?? ""),
   });
-  if (error) redirect("/login?err=" + encodeURIComponent("Email atau kata sandi salah."));
-  redirect("/mulai");
+  const next = String(fd.get("next") ?? "");
+  if (error) redirect("/login?err=" + encodeURIComponent("Email atau kata sandi salah.") + (next ? "&next=" + encodeURIComponent(next) : ""));
+  // Hanya tujuan relatif di situs ini.
+  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/mulai");
 }
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ err?: string; ok?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ err?: string; ok?: string; next?: string }> }) {
   const sp = await searchParams;
   return (
     <main className="grid min-h-screen place-items-center px-4 py-10">
@@ -27,6 +30,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </div>
         <Flash searchParams={sp} />
         <form action={signIn} className="flex flex-col gap-4 rounded-lg border border-line bg-sheet p-6">
+          {sp.next && <input type="hidden" name="next" value={sp.next} />}
           <Field label="Email">
             <Input id="email" name="email" type="email" autoComplete="email" required placeholder="nama@sekolah.sch.id" />
           </Field>
@@ -35,7 +39,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </Field>
           <Button type="submit" className="mt-2">Masuk</Button>
         </form>
-        <p className="mt-6 text-center text-xs text-muted">Lupa kata sandi? Hubungi admin sekolah Anda untuk mengatur ulang.</p>
+        <p className="mt-6 text-center text-sm"><Link href="/lupa-sandi" className="font-semibold text-brand">Lupa kata sandi?</Link></p>
+        <p className="mt-2 text-center text-xs text-muted">Sekolah belum terdaftar? <Link href="/daftar" className="font-semibold text-brand">Daftar gratis</Link></p>
       </div>
     </main>
   );

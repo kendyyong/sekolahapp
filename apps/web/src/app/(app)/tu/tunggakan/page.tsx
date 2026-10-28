@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { run } from "@/lib/actions";
 import { rupiah, tanggal } from "@/lib/format";
-import { Button, Flash, PageHeader, Stat, Table } from "@/components/ui";
+import { Button, DownloadLink, Flash, PageHeader, Stat, Table } from "@/components/ui";
 
 async function applyLateFees() {
   "use server";
@@ -13,7 +13,7 @@ async function applyLateFees() {
 
 export default async function Arrears({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("finance", "principal");
+  const { supabase, schoolId } = await requireModule("finance", "finance", "principal");
   const { data } = await supabase.from("v_student_arrears").select("student_id, full_name, nis, class_name, open_invoices, outstanding, oldest_due_on")
     .eq("school_id", schoolId).order("outstanding", { ascending: false });
   const total = (data ?? []).reduce((s, r) => s + Number(r.outstanding), 0);
@@ -21,7 +21,10 @@ export default async function Arrears({ searchParams }: { searchParams: Promise<
   return (
     <>
       <PageHeader title="Tunggakan" subtitle="Tagihan yang lewat jatuh tempo dan belum lunas." actions={
-        <form action={applyLateFees}><Button variant="secondary">Terapkan denda</Button></form>
+        <div className="flex flex-wrap gap-2">
+          <DownloadLink href="/unduh/tunggakan">Unduh Excel</DownloadLink>
+          <form action={applyLateFees}><Button variant="secondary">Terapkan denda</Button></form>
+        </div>
       } />
       <Flash searchParams={sp} />
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3">

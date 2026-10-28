@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
-import { tanggal } from "@/lib/format";
+import { tanggal, todayJakarta } from "@/lib/format";
 import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
 
 async function createYear(fd: FormData) {
@@ -65,7 +65,7 @@ export default async function ClassesAdmin({ searchParams }: { searchParams: Pro
         <div className="flex min-w-0 flex-col gap-6">
           <Card title={activeYear ? `Kelas tahun ajaran ${activeYear.name}` : "Kelas"}>
             {!activeYear ? <p className="text-sm text-muted">Aktifkan tahun ajaran terlebih dahulu.</p> : (
-              <Table head={["Kelas", "Tingkat", "Murid", "Wali kelas", "Kode absen"]} empty="Belum ada kelas.">
+              <Table head={["Kelas", "Tingkat", "Murid", "Wali kelas", "Kode absen", "Rekap absensi"]} empty="Belum ada kelas.">
                 {(classes ?? []).map((c: any) => (
                   <tr key={c.id}>
                     <td className="font-semibold">{c.name}</td>
@@ -88,6 +88,10 @@ export default async function ClassesAdmin({ searchParams }: { searchParams: Pro
                         <code className="text-xs">{c.qr_secret}</code>
                         <button className="text-xs font-semibold text-brand">Ganti</button>
                       </form>
+                    </td>
+                    <td>
+                      <a href={`/unduh/absensi-kelas?kelas=${c.id}&bulan=${todayJakarta().slice(0, 7)}`} download
+                        className="text-sm font-semibold whitespace-nowrap text-brand">Excel bulan ini</a>
                     </td>
                   </tr>
                 ))}

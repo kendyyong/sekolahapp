@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { rupiah, tanggal } from "@/lib/format";
 import { Card, PageHeader, Stat, Table } from "@/components/ui";
 
@@ -27,7 +27,7 @@ function Bar({ parts, total }: { parts: { label: string; value: number; classNam
 }
 
 export default async function PrincipalDashboard() {
-  const { supabase, schoolId, active } = await requireRole("principal");
+  const { supabase, schoolId, active } = await requireModule("dashboard", "principal");
   const { data, error } = await supabase.rpc("principal_dashboard", { p_school: schoolId });
   if (error) throw error;
   const d = data as Dashboard;

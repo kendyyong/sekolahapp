@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { optStr, run, str, uploadFile } from "@/lib/actions";
 import { tanggal, todayJakarta, waktu } from "@/lib/format";
 import { GeoFields } from "@/components/geo-fields";
@@ -43,7 +43,7 @@ async function cancelLeave(fd: FormData) {
 
 export default async function StaffSelf({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, user, schoolId } = await requireRole(...STAFF);
+  const { supabase, user, schoolId } = await requireModule("staff", ...STAFF);
   const today = todayJakarta();
   const [{ data: todayRow }, { data: recent }, { data: balance }, { data: leaves }, { data: colleagues }] = await Promise.all([
     supabase.from("staff_attendance").select("status, check_in_at, check_out_at").eq("school_id", schoolId).eq("user_id", user.id).eq("date", today).maybeSingle(),

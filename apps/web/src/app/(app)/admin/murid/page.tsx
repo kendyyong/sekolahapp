@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
-import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { Badge, Button, Card, DownloadLink, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
 
 async function addStudent(fd: FormData) {
   "use server";
@@ -83,7 +83,7 @@ export default async function StudentsAdmin({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <PageHeader title="Data Murid" subtitle={`${rows.length} murid ditampilkan`} />
+      <PageHeader title="Data Murid" subtitle={`${rows.length} murid ditampilkan`} actions={<DownloadLink href="/unduh/murid">Unduh Excel</DownloadLink>} />
       <Flash searchParams={sp} />
       <form className="mb-5 flex flex-wrap items-end gap-2">
         <Field label="Cari nama"><Input id="q" name="q" defaultValue={sp.q ?? ""} /></Field>

@@ -78,6 +78,15 @@ export function LinkButton({ variant = "secondary", className, ...props }: Compo
   );
 }
 
+/** Tautan unduhan berkas (bukan navigasi, jadi tidak di-prefetch). */
+export function DownloadLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a href={href} download className={cx("inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold transition", BTN.secondary)}>
+      <span aria-hidden>⤓</span>{children}
+    </a>
+  );
+}
+
 export function Field({ label, hint, children, className }: { label: string; hint?: string; children: ReactNode; className?: string }) {
   return (
     <label className={cx("flex min-w-0 flex-col gap-1 text-sm", className)}>

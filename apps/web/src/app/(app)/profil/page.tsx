@@ -1,6 +1,6 @@
 import { getSession, ROLE_LABEL } from "@/lib/session";
 import { run, str } from "@/lib/actions";
-import { Badge, Button, Card, Field, Flash, Input, PageHeader } from "@/components/ui";
+import { Badge, Button, Card, Field, Flash, Input, LinkButton, PageHeader } from "@/components/ui";
 
 async function saveProfile(fd: FormData) {
   "use server";
@@ -21,7 +21,9 @@ async function changePassword(fd: FormData) {
 
 export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { profile, user, roles } = await getSession();
+  const { profile, user, roles, supabase } = await getSession();
+  const { data: deletion } = await supabase.from("account_deletion_requests").select("id")
+    .eq("user_id", user.id).eq("status", "pending").maybeSingle();
   return (
     <>
       <PageHeader title="Profil Saya" />
@@ -43,6 +45,14 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
             <Field label="Ulangi kata sandi"><Input id="password2" name="password2" type="password" minLength={8} required /></Field>
             <Button type="submit" className="self-start">Ganti kata sandi</Button>
           </form>
+        </Card>
+        <Card title="Hapus akun">
+          <p className="mb-3 text-sm text-muted">
+            {deletion
+              ? "Permintaan hapus akun Anda sedang diproses. Anda masih bisa membatalkannya."
+              : "Minta penghapusan akun dan data pribadi Anda. Catatan pendidikan yang wajib disimpan sekolah tetap ada tanpa terhubung ke akun Anda."}
+          </p>
+          <LinkButton href="/hapus-akun">{deletion ? "Lihat permintaan" : "Minta hapus akun"}</LinkButton>
         </Card>
       </div>
     </>

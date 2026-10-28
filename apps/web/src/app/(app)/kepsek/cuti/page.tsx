@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { tanggal, waktu } from "@/lib/format";
 import { signedUrl } from "@/lib/queries";
@@ -17,7 +17,7 @@ async function review(fd: FormData) {
 
 export default async function StaffLeaveApprovals({ searchParams }: { searchParams: Promise<{ status?: string; ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("principal");
+  const { supabase, schoolId } = await requireModule("staff", "principal");
   const status = sp.status ?? "pending";
   const { data } = await supabase.from("staff_leave_requests")
     .select("id, user_id, kind, starts_on, ends_on, reason, attachment_path, status, review_note, created_at, requester:user_id(full_name), substitute:substitute_id(full_name)")

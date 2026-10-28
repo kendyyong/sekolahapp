@@ -1,10 +1,10 @@
-import { requireRole, ROLE_LABEL, type Role } from "@/lib/session";
+import { ROLE_LABEL, type Role, requireModule } from "@/lib/session";
 import { tanggal, todayJakarta, waktu } from "@/lib/format";
-import { Button, Field, Input, PageHeader, StatusBadge, Table } from "@/components/ui";
+import { Button, DownloadLink, Field, Input, PageHeader, StatusBadge, Table } from "@/components/ui";
 
 export default async function StaffAttendance({ searchParams }: { searchParams: Promise<{ tanggal?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("principal", "school_admin");
+  const { supabase, schoolId } = await requireModule("staff", "principal", "school_admin");
   const date = sp.tanggal ?? todayJakarta();
   const [{ data: staff }, { data: att }] = await Promise.all([
     supabase.from("memberships").select("user_id, role, profiles(full_name)").eq("school_id", schoolId).eq("is_active", true)
@@ -25,6 +25,7 @@ export default async function StaffAttendance({ searchParams }: { searchParams: 
       <form className="mb-5 flex items-end gap-2">
         <Field label="Tanggal"><Input id="tanggal" name="tanggal" type="date" defaultValue={date} /></Field>
         <Button variant="secondary">Tampilkan</Button>
+        <DownloadLink href={`/unduh/kehadiran-pegawai?bulan=${date.slice(0, 7)}`}>Rekap bulan ini (Excel)</DownloadLink>
       </form>
       <Table head={["Nama", "Peran", "Status", "Masuk", "Pulang"]}>
         {[...people.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name)).map(([id, p]) => {

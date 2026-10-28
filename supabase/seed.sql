@@ -25,7 +25,7 @@ insert into public.foundations (id, name) values ('00000000-0000-0000-0000-00000
 insert into public.foundation_admins (foundation_id, user_id) values ('00000000-0000-0000-0000-0000000000ff', '00000000-0000-0000-0000-0000000000f1');
 
 insert into public.schools (id, foundation_id, name, slug, level, plan, settings) values
-  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000ff', 'SMP Harapan Bangsa', 'smp-harapan-bangsa', 'SMP', 'pro',
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000ff', 'SMP Harapan Bangsa', 'smp-harapan-bangsa', 'SMP', 'enterprise',
    '{"school_start_time":"07:00","late_after_minutes":15,"geofence":null,"annual_leave_days":12,"student_leave_escalate_days":3,"invoice_due_day":10,"late_fee_amount":10000}'),
   ('00000000-0000-0000-0000-00000000bbbb', '00000000-0000-0000-0000-0000000000ff', 'SD Tunas Mekar', 'sd-tunas-mekar', 'SD', 'basic', default);
 

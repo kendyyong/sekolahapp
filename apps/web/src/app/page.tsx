@@ -157,7 +157,11 @@ export default async function Landing() {
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-sm text-muted">
           <span>© {new Date().getFullYear()} SekolahApp</span>
-          <span>Absensi · Tugas · Izin · SPP · Komunikasi</span>
+          <nav className="flex gap-4">
+            <Link href="/privasi" className="hover:text-ink">Kebijakan Privasi</Link>
+            <Link href="/syarat" className="hover:text-ink">Syarat Layanan</Link>
+            <Link href="/hapus-akun" className="hover:text-ink">Hapus akun</Link>
+          </nav>
         </div>
       </footer>
     </div>

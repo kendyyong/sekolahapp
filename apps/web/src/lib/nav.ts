@@ -1,6 +1,7 @@
-import type { Role } from "@/lib/session";
+import type { Module, Role } from "@/lib/session";
 
-export interface NavItem { href: string; label: string }
+/** `module`: item hanya tampil bila paket sekolah memuat modul ini. */
+export interface NavItem { href: string; label: string; module?: Module }
 
 export const NAV: Record<Role, NavItem[]> = {
   school_admin: [
@@ -14,10 +15,10 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/pengumuman", label: "Pengumuman" },
   ],
   principal: [
-    { href: "/kepsek", label: "Dasbor" },
-    { href: "/kepsek/cuti", label: "Persetujuan Cuti" },
-    { href: "/kepsek/arahan", label: "Arahan untuk Guru" },
-    { href: "/kepsek/kehadiran", label: "Kehadiran Guru" },
+    { href: "/kepsek", label: "Dasbor", module: "dashboard" },
+    { href: "/kepsek/cuti", label: "Persetujuan Cuti", module: "staff" },
+    { href: "/kepsek/arahan", label: "Arahan untuk Guru", module: "staff" },
+    { href: "/kepsek/kehadiran", label: "Kehadiran Guru", module: "staff" },
     { href: "/pengumuman", label: "Pengumuman" },
   ],
   teacher: [
@@ -28,24 +29,24 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/guru/kelompok", label: "Verifikasi Kelompok" },
     { href: "/guru/izin", label: "Izin Murid" },
     { href: "/guru/pesan", label: "Pesan Orang Tua" },
-    { href: "/pegawai", label: "Absen & Cuti Saya" },
-    { href: "/pegawai/arahan", label: "Arahan Kepsek" },
+    { href: "/pegawai", label: "Absen & Cuti Saya", module: "staff" },
+    { href: "/pegawai/arahan", label: "Arahan Kepsek", module: "staff" },
     { href: "/pengumuman", label: "Pengumuman" },
   ],
   counselor: [
-    { href: "/bk", label: "Murid Perlu Perhatian" },
-    { href: "/bk/catatan", label: "Catatan Konseling" },
-    { href: "/pegawai", label: "Absen & Cuti Saya" },
-    { href: "/pegawai/arahan", label: "Arahan Kepsek" },
+    { href: "/bk", label: "Murid Perlu Perhatian", module: "counseling" },
+    { href: "/bk/catatan", label: "Catatan Konseling", module: "counseling" },
+    { href: "/pegawai", label: "Absen & Cuti Saya", module: "staff" },
+    { href: "/pegawai/arahan", label: "Arahan Kepsek", module: "staff" },
     { href: "/pengumuman", label: "Pengumuman" },
   ],
   finance: [
-    { href: "/tu", label: "Ringkasan Keuangan" },
-    { href: "/tu/tagihan", label: "Tagihan & Pembayaran" },
-    { href: "/tu/biaya", label: "Master Biaya" },
-    { href: "/tu/beasiswa", label: "Beasiswa & Potongan" },
-    { href: "/tu/tunggakan", label: "Tunggakan" },
-    { href: "/pegawai", label: "Absen & Cuti Saya" },
+    { href: "/tu", label: "Ringkasan Keuangan", module: "finance" },
+    { href: "/tu/tagihan", label: "Tagihan & Pembayaran", module: "finance" },
+    { href: "/tu/biaya", label: "Master Biaya", module: "finance" },
+    { href: "/tu/beasiswa", label: "Beasiswa & Potongan", module: "finance" },
+    { href: "/tu/tunggakan", label: "Tunggakan", module: "finance" },
+    { href: "/pegawai", label: "Absen & Cuti Saya", module: "staff" },
     { href: "/pengumuman", label: "Pengumuman" },
   ],
   student: [
@@ -53,13 +54,13 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/murid/absen", label: "Absen" },
     { href: "/murid/tugas", label: "Tugas & PR" },
     { href: "/murid/kelompok", label: "Kelompok Kerja" },
-    { href: "/murid/biaya", label: "Biaya Sekolah" },
+    { href: "/murid/biaya", label: "Biaya Sekolah", module: "finance" },
     { href: "/pengumuman", label: "Pengumuman" },
   ],
   guardian: [
     { href: "/ortu", label: "Anak Saya" },
     { href: "/ortu/izin", label: "Pengajuan Izin" },
-    { href: "/ortu/tagihan", label: "Tagihan & Bayar" },
+    { href: "/ortu/tagihan", label: "Tagihan & Bayar", module: "finance" },
     { href: "/ortu/pesan", label: "Pesan Wali Kelas" },
     { href: "/pengumuman", label: "Pengumuman" },
   ],
@@ -76,3 +77,6 @@ export function foundationNav(foundations: { id: string; name: string }[]): NavI
     ? [{ href: "/yayasan", label: foundations[0].name }]
     : foundations.map((f) => ({ href: `/yayasan?f=${f.id}`, label: f.name }));
 }
+
+export const visibleNav = (items: NavItem[], modules: Module[]) =>
+  items.filter((i) => !i.module || modules.includes(i.module));

@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { rupiah, tanggal, todayJakarta } from "@/lib/format";
 import { Card, PageHeader, Stat, Table } from "@/components/ui";
 
 const METHOD: Record<string, string> = { cash: "Tunai", transfer: "Transfer", va: "Virtual Account", qris: "QRIS", ewallet: "E-wallet", retail: "Gerai retail" };
 
 export default async function FinanceHome() {
-  const { supabase, schoolId } = await requireRole("finance");
+  const { supabase, schoolId } = await requireModule("finance", "finance");
   const today = todayJakarta();
   const monthStart = today.slice(0, 8) + "01";
   const [{ data: summary }, { data: open }, { data: recent }, { data: account }] = await Promise.all([

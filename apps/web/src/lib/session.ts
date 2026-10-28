@@ -28,6 +28,20 @@ export const ROLE_HOME: Record<Role, string> = {
 
 export interface RoleOption { school_id: string; school_name: string; role: Role }
 
+/** Modul paket langganan (lihat tabel plans di database). */
+export type Module = "core" | "staff" | "finance" | "grades" | "counseling" | "dashboard" | "foundation" | "whitelabel";
+
+export const MODULE_LABEL: Record<Module, string> = {
+  core: "Absensi, tugas, izin, pengumuman, pesan",
+  staff: "Absen & cuti guru, arahan kepala sekolah",
+  finance: "SPP & pembayaran online",
+  grades: "Penilaian & rapor",
+  counseling: "BK & catatan sikap",
+  dashboard: "Dasbor kepala sekolah",
+  foundation: "Dasbor yayasan",
+  whitelabel: "Nama & logo sekolah sendiri",
+};
+
 export interface AdminScopes { platform: boolean; foundations: { id: string; name: string }[] }
 
 export const ACTIVE_ROLE_COOKIE = "sa_active";
@@ -49,7 +63,11 @@ export const getSession = cache(async () => {
   const [sid, r] = raw?.split("|") ?? [];
   const active = options.find((o) => o.school_id === sid && o.role === r) ?? options[0] ?? null;
 
-  return { supabase, user, profile, roles: options, active, scopes };
+  const modules = active
+    ? (((await supabase.rpc("school_modules", { p_school: active.school_id })).data ?? []) as Module[])
+    : [];
+
+  return { supabase, user, profile, roles: options, active, scopes, modules };
 });
 
 /** Halaman pemilik platform (super admin). */
@@ -73,4 +91,11 @@ export async function requireRole(...allowed: Role[]) {
   if (!s.active) redirect("/tanpa-peran");
   if (!allowed.includes(s.active.role)) redirect(ROLE_HOME[s.active.role]);
   return { ...s, active: s.active, schoolId: s.active.school_id };
+}
+
+/** Seperti requireRole, tetapi halaman juga butuh modul paket tertentu. */
+export async function requireModule(module: Module, ...allowed: Role[]) {
+  const s = await requireRole(...allowed);
+  if (!s.modules.includes(module)) redirect(`/paket?fitur=${module}`);
+  return s;
 }
