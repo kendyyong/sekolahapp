@@ -35,7 +35,7 @@ export const S = {
 
 const config = {
   host: process.env.PGHOST ?? '/tmp/pg',
-  port: Number(process.env.PGPORT ?? 54322),
+  port: Number(process.env.PGPORT ?? 54329),
   user: 'postgres',
   database: 'sekolahapp_test',
 };
