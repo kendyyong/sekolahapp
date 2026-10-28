@@ -12,7 +12,7 @@ kepala sekolah, Guru BK, dan admin sekolah/yayasan. Rancangan produk lengkap:
 | `supabase/functions` | Edge Functions (Deno): buat akun, pembayaran Xendit, webhook, tugas bulanan, push FCM |
 | `supabase/tests` | Tes otomatis RLS & alur (izin, cuti, kelompok, tugas, SPP, absensi) |
 | `supabase/seed.sql` | Data demo untuk pengembangan lokal |
-| `apps/web` | Dasbor web Next.js untuk semua peran |
+| `apps/web` | Situs publik (harga, pendaftaran sekolah mandiri) dan dasbor web Next.js untuk semua peran, yayasan, dan pemilik platform |
 | `apps/mobile` | Aplikasi HP Flutter untuk murid, orang tua, dan guru (lihat `apps/mobile/README.md`) |
 
 ## Menjalankan secara lokal
@@ -32,6 +32,8 @@ Akun demo (kata sandi semua `sekolah123`):
 
 | Email | Peran |
 | --- | --- |
+| `platform@demo.sekolahapp.id` | Pemilik platform: semua sekolah, paket, tagihan langganan |
+| `yayasan@demo.sekolahapp.id` | Ketua Yayasan Harapan Nusantara (membawahi 2 sekolah demo) |
 | `admin@demo.sekolahapp.id` | Admin Sekolah |
 | `kepsek@demo.sekolahapp.id` | Kepala Sekolah |
 | `sari@demo.sekolahapp.id` | Guru Matematika, wali kelas VII-A, sekaligus orang tua Bela |

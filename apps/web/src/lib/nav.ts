@@ -10,6 +10,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/admin/murid", label: "Data Murid" },
     { href: "/admin/pengguna", label: "Akun & Peran" },
     { href: "/admin/pengaturan", label: "Pengaturan Sekolah" },
+    { href: "/admin/langganan", label: "Langganan & Paket" },
     { href: "/pengumuman", label: "Pengumuman" },
   ],
   principal: [
@@ -63,3 +64,15 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/pengumuman", label: "Pengumuman" },
   ],
 };
+
+export const PLATFORM_NAV: NavItem[] = [
+  { href: "/platform", label: "Ringkasan" },
+  { href: "/platform/sekolah", label: "Sekolah & Paket" },
+  { href: "/platform/tagihan", label: "Tagihan Langganan" },
+];
+
+export function foundationNav(foundations: { id: string; name: string }[]): NavItem[] {
+  return foundations.length === 1
+    ? [{ href: "/yayasan", label: foundations[0].name }]
+    : foundations.map((f) => ({ href: `/yayasan?f=${f.id}`, label: f.name }));
+}

@@ -28,6 +28,8 @@ export const ROLE_HOME: Record<Role, string> = {
 
 export interface RoleOption { school_id: string; school_name: string; role: Role }
 
+export interface AdminScopes { platform: boolean; foundations: { id: string; name: string }[] }
+
 export const ACTIVE_ROLE_COOKIE = "sa_active";
 
 export const getSession = cache(async () => {
@@ -35,18 +37,35 @@ export const getSession = cache(async () => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: profile }, { data: roles }] = await Promise.all([
+  const [{ data: profile }, { data: roles }, { data: scopeData }] = await Promise.all([
     supabase.from("profiles").select("id, full_name, email, phone, avatar_url").eq("id", user.id).single(),
     supabase.rpc("my_roles"),
+    supabase.rpc("my_admin_scopes"),
   ]);
+  const scopes = (scopeData ?? { platform: false, foundations: [] }) as AdminScopes;
   const options = (roles ?? []) as RoleOption[];
 
   const raw = (await cookies()).get(ACTIVE_ROLE_COOKIE)?.value;
   const [sid, r] = raw?.split("|") ?? [];
   const active = options.find((o) => o.school_id === sid && o.role === r) ?? options[0] ?? null;
 
-  return { supabase, user, profile, roles: options, active };
+  return { supabase, user, profile, roles: options, active, scopes };
 });
+
+/** Halaman pemilik platform (super admin). */
+export async function requirePlatform() {
+  const s = await getSession();
+  if (!s.scopes.platform) redirect("/mulai");
+  return s;
+}
+
+/** Halaman admin yayasan; `id` memilih yayasan bila mengelola lebih dari satu. */
+export async function requireFoundation(id?: string) {
+  const s = await getSession();
+  const foundation = s.scopes.foundations.find((f) => f.id === id) ?? s.scopes.foundations[0];
+  if (!foundation) redirect("/mulai");
+  return { ...s, foundation };
+}
 
 /** Halaman yang hanya boleh dibuka peran tertentu. Mengembalikan sesi dengan peran aktif. */
 export async function requireRole(...allowed: Role[]) {

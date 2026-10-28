@@ -13,7 +13,7 @@ async function signIn(fd: FormData) {
     password: String(fd.get("password") ?? ""),
   });
   if (error) redirect("/login?err=" + encodeURIComponent("Email atau kata sandi salah."));
-  redirect("/");
+  redirect("/mulai");
 }
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ err?: string; ok?: string }> }) {
