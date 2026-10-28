@@ -52,3 +52,16 @@ export async function uploadFile(sb: SupabaseClient, bucket: string, folder: str
   if (error) throw new Error(`Gagal mengunggah berkas: ${error.message}`);
   return path;
 }
+
+/** Memanggil Edge Function; melempar Error berisi pesan dari fungsi (bukan "non-2xx status code"). */
+export async function invokeFunction<T = Record<string, unknown>>(sb: SupabaseClient, name: string, body: unknown): Promise<T> {
+  const { data, error } = await sb.functions.invoke(name, { body: body as Record<string, unknown> });
+  if (error) {
+    const ctx = (error as { context?: Response }).context;
+    const res = ctx ? await ctx.json().catch(() => null) : null;
+    if (ctx?.status === 503 || res?.code === "BOOT_ERROR") throw new Error("Layanan sedang tidak tersedia. Coba beberapa saat lagi.");
+    throw new Error(res?.error ?? res?.message ?? error.message);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data as T;
+}
