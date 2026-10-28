@@ -7,3 +7,5 @@ node_modules/
 supabase/.temp/
 apps/mobile/build/
 apps/mobile/.dart_tool/
+supabase/.branches/
+supabase/.temp/
