@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+
+import '../app.dart';
+import '../core/session.dart';
+import '../core/supa.dart';
+import '../core/ui.dart';
+import 'guardian/guardian_home.dart';
+import 'guardian/guardian_invoices.dart';
+import 'guardian/guardian_leave.dart';
+import 'guardian/guardian_messages.dart';
+import 'shared/announcements_screen.dart';
+import 'shared/notifications_screen.dart';
+import 'shared/profile_screen.dart';
+import 'student/student_checkin.dart';
+import 'student/student_fees.dart';
+import 'student/student_groups.dart';
+import 'student/student_home.dart';
+import 'student/student_tasks.dart';
+import 'teacher/staff_self.dart';
+import 'teacher/teacher_attendance.dart';
+import 'teacher/teacher_home.dart';
+import 'teacher/teacher_leave_review.dart';
+import 'teacher/teacher_messages.dart';
+
+class _Tab {
+  const _Tab(this.label, this.icon, this.page);
+  final String label;
+  final IconData icon;
+  final Widget page;
+}
+
+List<_Tab> _tabsFor(String role) => switch (role) {
+      'student' => const [
+          _Tab('Beranda', Icons.home_outlined, StudentHome()),
+          _Tab('Absen', Icons.qr_code_scanner, StudentCheckIn()),
+          _Tab('Tugas', Icons.assignment_outlined, StudentTasks()),
+          _Tab('Kelompok', Icons.groups_outlined, StudentGroups()),
+          _Tab('Biaya', Icons.receipt_long_outlined, StudentFees()),
+        ],
+      'guardian' => const [
+          _Tab('Anak', Icons.child_care_outlined, GuardianHome()),
+          _Tab('Izin', Icons.sick_outlined, GuardianLeave()),
+          _Tab('Tagihan', Icons.payments_outlined, GuardianInvoices()),
+          _Tab('Pesan', Icons.chat_bubble_outline, GuardianMessages()),
+          _Tab('Info', Icons.campaign_outlined, AnnouncementsScreen()),
+        ],
+      'teacher' => const [
+          _Tab('Beranda', Icons.home_outlined, TeacherHome()),
+          _Tab('Absensi', Icons.fact_check_outlined, TeacherAttendance()),
+          _Tab('Izin', Icons.mark_email_unread_outlined, TeacherLeaveReview()),
+          _Tab('Pesan', Icons.chat_bubble_outline, TeacherMessages()),
+          _Tab('Absen Saya', Icons.badge_outlined, StaffSelf()),
+        ],
+      _ => const [_Tab('Info', Icons.campaign_outlined, _WebOnly())],
+    };
+
+/// Kerangka aplikasi untuk peran aktif: navigasi bawah + notifikasi + profil.
+class RoleShell extends StatefulWidget {
+  const RoleShell({super.key});
+  @override
+  State<RoleShell> createState() => _RoleShellState();
+}
+
+class _RoleShellState extends State<RoleShell> {
+  int _index = 0;
+  int _unread = 0;
+  late final List<_Tab> _tabs = _tabsFor(session.active!.role);
+
+  @override
+  void initState() {
+    super.initState();
+    _countUnread();
+  }
+
+  Future<void> _countUnread() async {
+    try {
+      final n = await sb.from('notifications').count().eq('user_id', session.userId).isFilter('read_at', null);
+      if (mounted) setState(() => _unread = n);
+    } catch (_) {}
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final a = session.active!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(_tabs[_index].label, style: const TextStyle(fontWeight: FontWeight.w800)),
+          Text('${roleLabel[a.role]} · ${a.schoolName}', style: const TextStyle(fontSize: 12, color: Palette.muted)),
+        ]),
+        actions: [
+          IconButton(
+            tooltip: 'Notifikasi',
+            icon: Badge(isLabelVisible: _unread > 0, label: Text('$_unread'), child: const Icon(Icons.notifications_outlined)),
+            onPressed: () async {
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
+              _countUnread();
+            },
+          ),
+          IconButton(
+            tooltip: 'Profil & ganti peran',
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+          ),
+        ],
+      ),
+      body: IndexedStack(index: _index, children: [for (final t in _tabs) t.page]),
+      bottomNavigationBar: _tabs.length < 2
+          ? null
+          : NavigationBar(
+              selectedIndex: _index,
+              onDestinationSelected: (i) => setState(() => _index = i),
+              destinations: [for (final t in _tabs) NavigationDestination(icon: Icon(t.icon), label: t.label)],
+            ),
+    );
+  }
+}
+
+class _WebOnly extends StatelessWidget {
+  const _WebOnly();
+  @override
+  Widget build(BuildContext context) => Column(children: [
+        Container(
+          width: double.infinity,
+          color: Palette.brandSoft,
+          padding: const EdgeInsets.all(12),
+          child: Text(
+            'Fitur ${roleLabel[session.active!.role]} tersedia lengkap di dasbor web. Di aplikasi ini Anda bisa membaca pengumuman dan notifikasi.',
+            style: const TextStyle(color: Palette.brand),
+          ),
+        ),
+        const Expanded(child: AnnouncementsScreen()),
+      ]);
+}

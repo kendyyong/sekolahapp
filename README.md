@@ -13,6 +13,7 @@ kepala sekolah, Guru BK, dan admin sekolah/yayasan. Rancangan produk lengkap:
 | `supabase/tests` | Tes otomatis RLS & alur (izin, cuti, kelompok, tugas, SPP, absensi) |
 | `supabase/seed.sql` | Data demo untuk pengembangan lokal |
 | `apps/web` | Dasbor web Next.js untuk semua peran |
+| `apps/mobile` | Aplikasi HP Flutter untuk murid, orang tua, dan guru (lihat `apps/mobile/README.md`) |
 
 ## Menjalankan secara lokal
 
@@ -24,6 +25,8 @@ npx supabase start            # Postgres, Auth, Storage, Edge Runtime + migrasi 
 npx supabase status -o env    # salin API_URL & ANON_KEY ke apps/web/.env.local (lihat .env.example)
 npm run web:dev               # http://localhost:3000
 ```
+
+Aplikasi HP: lihat [apps/mobile/README.md](apps/mobile/README.md).
 
 Akun demo (kata sandi semua `sekolah123`):
 
