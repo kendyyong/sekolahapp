@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* Palet: tinta biru buku rapor + merah pena guru. */
+@theme {
+  --color-paper: #f5f7fb;
+  --color-sheet: #ffffff;
+  --color-ink: #18233d;
+  --color-muted: #5b6680;
+  --color-line: #dfe3ec;
+  --color-brand: #1f4fb8;
+  --color-brand-strong: #183f94;
+  --color-brand-soft: #e6edfb;
+  --color-accent: #c8372d;
+  --color-good: #1d7a4c;
+  --color-good-soft: #e3f3ea;
+  --color-warn: #9a6a00;
+  --color-warn-soft: #fbf1d9;
+  --color-bad: #c8372d;
+  --color-bad-soft: #fbe9e7;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #10151f;
+    --color-sheet: #161d2b;
+    --color-ink: #e4e8f1;
+    --color-muted: #9aa5bd;
+    --color-line: #2a3447;
+    --color-brand: #7ea4ff;
+    --color-brand-strong: #a5c0ff;
+    --color-brand-soft: #1b2a4a;
+    --color-good: #6fd3a0;
+    --color-good-soft: #16302a;
+    --color-warn: #f0c25a;
+    --color-warn-soft: #33291a;
+    --color-bad: #ff8a7f;
+    --color-bad-soft: #3a1f1e;
+    color-scheme: dark;
+  }
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
