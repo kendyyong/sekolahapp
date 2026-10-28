@@ -37,6 +37,30 @@ async function grade(fd: FormData) {
     sb.rpc("grade_submission", { p_submission: str(fd, "submission_id"), p_score: num(fd, "score"), p_feedback: optStr(fd, "feedback") }));
 }
 
+/** Tugas yang dikumpulkan di kertas: guru mencentang, memberi nilai, dan boleh memotret jawaban. */
+async function recordOffline(fd: FormData) {
+  "use server";
+  const { schoolId } = await requireRole("teacher");
+  const assignment = str(fd, "assignment_id");
+  await run(str(fd, "back"), "Tugas kertas dicatat. Orang tua menerima nilainya.", async (sb) => {
+    const rows = [];
+    for (const id of fd.getAll("student_id").map(String)) {
+      const score = str(fd, `score_${id}`);
+      if (fd.get(`in_${id}`) !== "on" && score === "") continue;
+      const photo = fd.get(`photo_${id}`);
+      const path = await uploadFile(sb, "submissions", `${schoolId}/${assignment}/${id}`, photo);
+      rows.push({
+        student_id: id,
+        score: score === "" ? null : Number(score.replace(",", ".")),
+        feedback: optStr(fd, `fb_${id}`),
+        attachments: path ? [{ path, name: (photo as File).name }] : [],
+      });
+    }
+    if (!rows.length) throw new Error("Centang murid yang mengumpulkan, atau isi nilainya.");
+    return sb.rpc("record_offline_submissions", { p_assignment: assignment, p_rows: rows });
+  });
+}
+
 async function removeAssignment(fd: FormData) {
   "use server";
   await run(`/guru/tugas?mapel=${str(fd, "ta")}`, "Tugas dihapus.", (sb) => sb.from("assignments").delete().eq("id", str(fd, "id")));
@@ -59,7 +83,7 @@ export default async function TeacherAssignments({ searchParams }: {
   let detail: React.ReactNode = null;
   if (selected) {
     const [{ data: subs }, roster] = await Promise.all([
-      supabase.from("submissions").select("id, student_id, body, link_url, attachments, submitted_at, is_late, score, feedback, group_id")
+      supabase.from("submissions").select("id, student_id, body, link_url, attachments, submitted_at, is_late, score, feedback, group_id, mode")
         .eq("assignment_id", selected.id),
       classRoster(supabase, ta.class_id),
     ]);
@@ -81,6 +105,7 @@ export default async function TeacherAssignments({ searchParams }: {
               <td className="max-w-md">
                 {!s ? <span className="text-muted">Belum mengumpulkan</span> : (
                   <div className="flex flex-col gap-1">
+                    {s.mode === "offline" && <span><Badge>Dikumpulkan di kertas</Badge></span>}
                     {s.body && <p className="whitespace-pre-line">{s.body}</p>}
                     {s.link_url && <a className="text-brand underline" href={s.link_url} target="_blank" rel="noreferrer">{s.link_url}</a>}
                     {files.map((f) => f.url && <a key={f.url} className="text-brand underline" href={f.url} target="_blank" rel="noreferrer">{f.name}</a>)}
@@ -104,6 +129,36 @@ export default async function TeacherAssignments({ searchParams }: {
             </tr>
           ))}
         </Table>
+
+        <form action={recordOffline} className="mt-6 border-t border-line pt-5">
+          <input type="hidden" name="assignment_id" value={selected.id} />
+          <input type="hidden" name="back" value={back} />
+          <h3 className="font-bold text-ink">Catat tugas kertas</h3>
+          <p className="mb-3 text-sm text-muted">
+            Untuk murid yang mengumpulkan di kertas atau tidak memakai aplikasi. Centang yang sudah mengumpulkan, isi nilai bila
+            sudah dinilai, dan lampirkan foto jawaban bila perlu (total foto maks. 6 MB sekali simpan).
+          </p>
+          <Table head={["Murid", "Kumpul", "Nilai", "Catatan", "Foto jawaban"]}>
+            {rows.filter(({ s }) => !s || s.mode === "offline").map(({ st, s }) => (
+              <tr key={st.id}>
+                <td className="font-semibold">
+                  <input type="hidden" name="student_id" value={st.id} />{st.full_name}
+                </td>
+                <td><input type="checkbox" name={`in_${st.id}`} defaultChecked={!!s} aria-label={`${st.full_name} mengumpulkan`} className="h-4 w-4" /></td>
+                <td>
+                  <input name={`score_${st.id}`} type="number" step="0.5" min={0} max={selected.max_score} defaultValue={s?.score ?? ""}
+                    aria-label={`Nilai ${st.full_name}`} className="w-20 rounded-md border border-line bg-sheet px-2 py-1 text-sm" />
+                </td>
+                <td>
+                  <input name={`fb_${st.id}`} defaultValue={s?.feedback ?? ""} placeholder="Catatan" aria-label={`Catatan ${st.full_name}`}
+                    className="w-40 rounded-md border border-line bg-sheet px-2 py-1 text-sm" />
+                </td>
+                <td><input name={`photo_${st.id}`} type="file" accept="image/*,application/pdf" aria-label={`Foto jawaban ${st.full_name}`} className="max-w-52 text-xs" /></td>
+              </tr>
+            ))}
+          </Table>
+          <Button type="submit" className="mt-3">Simpan tugas kertas</Button>
+        </form>
       </Card>
     );
   }

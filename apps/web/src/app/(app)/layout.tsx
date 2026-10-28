@@ -9,10 +9,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { count: unread } = await supabase.from("notifications")
     .select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null);
   const nav = active ? NAV[active.role] : [];
+  // Sekolah yang mematikan aplikasi murid: akun murid hanya melihat pemberitahuan.
+  const studentAppOff = active?.role === "student"
+    && (await supabase.rpc("student_app_mode", { p_school: active.school_id })).data === "off";
 
   return (
-    <div className="lg:grid lg:min-h-screen lg:grid-cols-[260px_minmax(0,1fr)]">
-      <aside className="border-b border-line bg-sheet lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
+    <div className="print:block lg:grid lg:min-h-screen lg:grid-cols-[260px_minmax(0,1fr)]">
+      <aside className="border-b border-line bg-sheet print:hidden lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div className="flex items-center justify-between gap-3 px-4 py-4 lg:px-5">
           <Link href="/mulai" className="text-lg font-extrabold tracking-tight text-ink">
             Sekolah<span className="text-accent">App</span>
@@ -69,8 +72,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main className="min-w-0 px-4 py-6 lg:px-10 lg:py-8">
-        <div className="mx-auto max-w-6xl">{children}</div>
+      <main className="min-w-0 px-4 py-6 print:p-0 lg:px-10 lg:py-8">
+        <div className="mx-auto max-w-6xl">
+          {studentAppOff ? (
+            <div className="mx-auto max-w-xl rounded-lg border border-line bg-sheet p-6">
+              <h1 className="text-xl font-extrabold text-ink">Aplikasi murid tidak dipakai di sekolahmu</h1>
+              <p className="mt-2 text-muted text-pretty">
+                {active.school_name} mencatat absen lewat kartu pelajar dan guru. Tugas dikumpulkan langsung ke guru, dan info tugas
+                serta nilai dikirim ke orang tuamu.
+              </p>
+            </div>
+          ) : children}
+        </div>
       </main>
     </div>
   );

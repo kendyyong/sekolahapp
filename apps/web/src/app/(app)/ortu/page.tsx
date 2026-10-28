@@ -5,6 +5,8 @@ import { myChildren } from "@/lib/queries";
 import { Badge, Card, Empty, LinkButton, PageHeader, Stat, StatusBadge } from "@/components/ui";
 import { ChildTabs, pickChild } from "./child-tabs";
 
+const jamOf = (ts: string) => new Date(ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" });
+
 export default async function GuardianHome({ searchParams }: { searchParams: Promise<{ anak?: string }> }) {
   const sp = await searchParams;
   const { supabase, user, schoolId } = await requireRole("guardian");
@@ -14,8 +16,9 @@ export default async function GuardianHome({ searchParams }: { searchParams: Pro
 
   const today = todayJakarta();
   const monthStart = today.slice(0, 8) + "01";
-  const [{ data: att }, { data: grades }, { data: invoices }, { data: behavior }, { data: leaves }, { data: news }] = await Promise.all([
-    supabase.from("student_attendance").select("date, status").eq("student_id", child.id).is("teaching_assignment_id", null)
+  const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString();
+  const [{ data: att }, { data: grades }, { data: invoices }, { data: behavior }, { data: leaves }, { data: news }, { data: tasks }] = await Promise.all([
+    supabase.from("student_attendance").select("date, status, checked_in_at, checked_out_at").eq("student_id", child.id).is("teaching_assignment_id", null)
       .gte("date", monthStart).order("date", { ascending: false }),
     supabase.from("submissions").select("id, score, graded_at, assignments(title, max_score, teaching_assignments(subjects(name)))")
       .eq("student_id", child.id).not("score", "is", null).order("graded_at", { ascending: false }).limit(6),
@@ -23,6 +26,12 @@ export default async function GuardianHome({ searchParams }: { searchParams: Pro
     supabase.from("behavior_records").select("id, kind, points, description, occurred_on").eq("student_id", child.id).order("occurred_on", { ascending: false }).limit(6),
     supabase.from("student_leave_requests").select("id").eq("student_id", child.id).eq("status", "pending"),
     supabase.from("announcements").select("id, title, published_at").eq("school_id", schoolId).order("published_at", { ascending: false }).limit(4),
+    // Tugas kelas anak: berguna terutama bila anak tidak memakai aplikasi.
+    child.class
+      ? supabase.from("assignments").select("id, title, kind, due_at, max_score, teaching_assignments!inner(class_id, subjects(name)), submissions(student_id, score, mode)")
+        .eq("teaching_assignments.class_id", child.class.id).eq("submissions.student_id", child.id)
+        .or(`due_at.gte.${weekAgo},due_at.is.null`).order("due_at", { ascending: true, nullsFirst: false }).limit(8)
+      : Promise.resolve({ data: [] as any[] }),
   ]);
   const count = (...s: string[]) => (att ?? []).filter((a) => s.includes(a.status)).length;
   const todayRow = att?.find((a) => a.date === today);
@@ -34,7 +43,8 @@ export default async function GuardianHome({ searchParams }: { searchParams: Pro
         actions={<LinkButton href={`/ortu/izin?anak=${child.id}`}>Ajukan izin</LinkButton>} />
       <ChildTabs items={children} active={child.id} base="/ortu" />
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Hari ini" value={todayRow ? <StatusBadge status={todayRow.status} /> : "Belum absen"} />
+        <Stat label="Hari ini" value={todayRow ? <StatusBadge status={todayRow.status} /> : "Belum absen"}
+          hint={todayRow?.checked_in_at ? `Tiba ${jamOf(todayRow.checked_in_at)}${todayRow.checked_out_at ? ` · pulang ${jamOf(todayRow.checked_out_at)}` : ""}` : undefined} />
         <Stat label="Hadir bulan ini" value={count("hadir", "terlambat")} hint={count("terlambat") ? `${count("terlambat")} kali terlambat` : undefined} />
         <Stat label="Izin / Sakit / Alpa" value={`${count("izin")} / ${count("sakit")} / ${count("alpa")}`} tone={count("alpa") ? "bad" : undefined} />
         <Stat label="Tagihan belum lunas" value={rupiah(owed)} tone={owed ? "warn" : "good"}
@@ -42,6 +52,25 @@ export default async function GuardianHome({ searchParams }: { searchParams: Pro
       </div>
       {!!leaves?.length && <p className="mb-4 rounded-md bg-warn-soft px-3 py-2 text-sm text-warn">{leaves.length} pengajuan izin menunggu persetujuan wali kelas.</p>}
       <div className="grid gap-6 lg:grid-cols-2">
+        <Card title="Tugas & PR" className="lg:col-span-2">
+          {!tasks?.length ? <Empty>Tidak ada tugas dalam sepekan ini.</Empty> : (
+            <ul className="divide-y divide-line">
+              {(tasks as any[]).map((t) => {
+                const sub = t.submissions?.[0];
+                return (
+                  <li key={t.id} className="flex flex-wrap items-center justify-between gap-3 py-2.5">
+                    <div><div className="font-semibold">{t.title}</div>
+                      <div className="text-xs text-muted">{t.teaching_assignments?.subjects?.name} · Tenggat {waktu(t.due_at)}</div></div>
+                    {sub?.score != null ? <b className="tabular-nums">{sub.score}<span className="text-xs font-normal text-muted">/{t.max_score}</span></b>
+                      : sub ? <Badge tone="info">{sub.mode === "offline" ? "Dikumpulkan ke guru" : "Sudah dikumpulkan"}</Badge>
+                      : t.due_at && new Date(t.due_at) < new Date() ? <Badge tone="bad">Belum dikumpulkan</Badge>
+                      : <Badge tone="warn">Belum dikumpulkan</Badge>}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </Card>
         <Card title="Nilai terbaru">
           {!grades?.length ? <Empty>Belum ada nilai.</Empty> : (
             <ul className="divide-y divide-line">
