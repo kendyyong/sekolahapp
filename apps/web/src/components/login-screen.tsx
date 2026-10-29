@@ -116,6 +116,11 @@ export function LoginScreen({ sp, school, from }: {
               Sekolah belum terdaftar? <Link href="/daftar" className="font-semibold text-brand">Daftar gratis</Link>
             </p>
           )}
+          {school && sp.next?.startsWith(`/ppdb/${school.slug}/`) && (
+            <p className="mt-8 border-t border-line pt-6 text-center text-sm text-muted">
+              Baru mendaftar PPDB? <Link href={`/ppdb/${school.slug}/akun`} className="font-semibold text-brand">Buat akun pendaftar</Link>
+            </p>
+          )}
           {school?.app_name && <p className="mt-8 text-center text-xs text-muted">Didukung SekolahApp</p>}
         </div>
       </section>

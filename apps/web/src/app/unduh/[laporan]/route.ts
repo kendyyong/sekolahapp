@@ -4,6 +4,7 @@ import { ROLE_LABEL, type Role, requireModule, requireRole } from "@/lib/session
 import { tanggal, todayJakarta } from "@/lib/format";
 import { classRoster } from "@/lib/queries";
 import { fetchAll, monthDays, monthLabel, xlsxResponse } from "@/lib/xlsx";
+import { FEE_LABEL, PPDB_STATUS, RELATIONS, type AdmissionStatus } from "@/lib/ppdb";
 
 // Unduhan Excel untuk laporan yang sering diminta dinas, yayasan, dan rapat sekolah.
 // Data diambil dengan sesi pengguna, jadi RLS tetap membatasi baris yang terlihat.
@@ -135,6 +136,34 @@ async function students(supabase: SupabaseClient, schoolId: string, schoolName: 
   });
 }
 
+/** Daftar pendaftar PPDB satu gelombang, lengkap dengan status, biaya, dan keputusan seleksi. */
+async function admissions(req: NextRequest) {
+  const { supabase, active } = await requireModule("ppdb", "school_admin", "principal", "finance");
+  const periodId = req.nextUrl.searchParams.get("periode") ?? "";
+  const { data: period } = await supabase.from("admission_periods").select("title, school_year, fee_amount")
+    .eq("id", periodId).eq("school_id", active.school_id).maybeSingle();
+  if (!period) return new Response("Gelombang tidak ditemukan", { status: 404 });
+  const data = await fetchAll<any>((from, to) =>
+    supabase.from("admission_applications")
+      .select("number, full_name, nisn, gender, birth_place, birth_date, religion, address, previous_school, parent_name, parent_relation, parent_phone, parent_occupation, status, fee_status, submitted_at, admission_reviews(decision, score)")
+      .eq("period_id", periodId).neq("status", "draft").order("number").order("id").range(from, to));
+  const decision: Record<string, string> = { accepted: "Diterima", waitlisted: "Cadangan", rejected: "Tidak diterima" };
+  const relation: Record<string, string> = Object.fromEntries(RELATIONS);
+  return xlsxResponse({
+    filename: `ppdb-${period.title}-${period.school_year.replace("/", "-")}.xlsx`.replace(/\s+/g, "-").toLowerCase(),
+    sheet: "Pendaftar",
+    title: [active.school_name, `Pendaftar PPDB ${period.title} · Tahun ajaran ${period.school_year}`, `Diunduh ${tanggal(todayJakarta(), true)}`],
+    head: ["No", "No. daftar", "Nama", "NISN", "L/P", "Tempat lahir", "Tanggal lahir", "Agama", "Sekolah asal", "Alamat",
+      "Orang tua/wali", "Hubungan", "No. HP", "Pekerjaan", "Dikirim", "Biaya", "Status", "Keputusan", "Nilai"],
+    rows: data.map((a, i) => [i + 1, a.number ?? "", a.full_name, a.nisn ?? "", a.gender ?? "", a.birth_place ?? "",
+      a.birth_date ? new Date(a.birth_date) : "", a.religion ?? "", a.previous_school ?? "", a.address ?? "",
+      a.parent_name ?? "", relation[a.parent_relation] ?? a.parent_relation ?? "", a.parent_phone ?? "", a.parent_occupation ?? "",
+      a.submitted_at ? new Date(a.submitted_at) : "", period.fee_amount ? FEE_LABEL[a.fee_status] : "Gratis", PPDB_STATUS[a.status as AdmissionStatus],
+      decision[a.admission_reviews?.decision ?? ""] ?? "", a.admission_reviews?.score ?? ""]),
+    widths: [5, 16, 28, 13, 5, 14, 13, 10, 22, 30, 24, 10, 16, 16, 13, 12, 16, 14, 8],
+  });
+}
+
 /** Leger nilai rapor satu kelas: murid × mapel, jumlah, dan rata-rata. */
 async function ledger(req: NextRequest) {
   const { supabase, active } = await requireModule("grades", "teacher", "school_admin", "principal");
@@ -178,6 +207,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ lapo
     case "kehadiran-pegawai": return staffAttendance(req);
     case "tunggakan": return arrears();
     case "leger": return ledger(req);
+    case "ppdb": return admissions(req);
     case "murid": {
       const { supabase, active } = await requireRole("school_admin", "principal");
       return students(supabase, active.school_id, active.school_name);
