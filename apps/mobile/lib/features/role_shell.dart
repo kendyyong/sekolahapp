@@ -23,10 +23,13 @@ import 'teacher/teacher_leave_review.dart';
 import 'teacher/teacher_messages.dart';
 
 class _Tab {
-  const _Tab(this.label, this.icon, this.page);
+  const _Tab(this.label, this.icon, this.page, {this.module});
   final String label;
   final IconData icon;
   final Widget page;
+
+  /// Tab hanya tampil bila paket sekolah memuat modul ini.
+  final String? module;
 }
 
 List<_Tab> _tabsFor(String role) => switch (role) {
@@ -35,12 +38,12 @@ List<_Tab> _tabsFor(String role) => switch (role) {
           _Tab('Absen', Icons.qr_code_scanner, StudentCheckIn()),
           _Tab('Tugas', Icons.assignment_outlined, StudentTasks()),
           _Tab('Kelompok', Icons.groups_outlined, StudentGroups()),
-          _Tab('Biaya', Icons.receipt_long_outlined, StudentFees()),
+          _Tab('Biaya', Icons.receipt_long_outlined, StudentFees(), module: 'finance'),
         ],
       'guardian' => const [
           _Tab('Anak', Icons.child_care_outlined, GuardianHome()),
           _Tab('Izin', Icons.sick_outlined, GuardianLeave()),
-          _Tab('Tagihan', Icons.payments_outlined, GuardianInvoices()),
+          _Tab('Tagihan', Icons.payments_outlined, GuardianInvoices(), module: 'finance'),
           _Tab('Pesan', Icons.chat_bubble_outline, GuardianMessages()),
           _Tab('Info', Icons.campaign_outlined, AnnouncementsScreen()),
         ],
@@ -49,7 +52,7 @@ List<_Tab> _tabsFor(String role) => switch (role) {
           _Tab('Absensi', Icons.fact_check_outlined, TeacherAttendance()),
           _Tab('Izin', Icons.mark_email_unread_outlined, TeacherLeaveReview()),
           _Tab('Pesan', Icons.chat_bubble_outline, TeacherMessages()),
-          _Tab('Absen Saya', Icons.badge_outlined, StaffSelf()),
+          _Tab('Absen Saya', Icons.badge_outlined, StaffSelf(), module: 'staff'),
         ],
       _ => const [_Tab('Info', Icons.campaign_outlined, _WebOnly())],
     };
@@ -64,7 +67,10 @@ class RoleShell extends StatefulWidget {
 class _RoleShellState extends State<RoleShell> {
   int _index = 0;
   int _unread = 0;
-  late final List<_Tab> _tabs = _tabsFor(session.active!.role);
+  late final List<_Tab> _tabs = [
+    for (final t in _tabsFor(session.active!.role))
+      if (t.module == null || session.modules.contains(t.module)) t,
+  ];
 
   @override
   void initState() {

@@ -68,6 +68,8 @@ cd supabase/functions && deno test _shared/
 
 ## Deploy ke Supabase Cloud (region Singapura)
 
+Panduan lengkap dari nol sampai Play Store (Supabase, Vercel, email, Xendit, Firebase, kunci rilis Android): [docs/go-live.md](docs/go-live.md). Ringkasnya:
+
 ```bash
 npx supabase link --project-ref <ref>
 npx supabase db push

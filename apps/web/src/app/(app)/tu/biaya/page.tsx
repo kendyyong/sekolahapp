@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah } from "@/lib/format";
 import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
@@ -35,7 +35,7 @@ async function toggleFee(fd: FormData) {
 
 export default async function FeesPage({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("finance");
+  const { supabase, schoolId } = await requireModule("finance", "finance");
   const [{ data: fees }, { data: year }] = await Promise.all([
     supabase.from("fee_types").select("id, code, name, category, is_monthly, default_amount, is_active, fee_rates(id, grade_level, amount, academic_year_id)")
       .eq("school_id", schoolId).order("is_monthly", { ascending: false }).order("name"),

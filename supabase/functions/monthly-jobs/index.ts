@@ -26,13 +26,16 @@ serve(async (req) => {
   const admin = adminClient();
   const { data: schools, error } = await admin.from("schools").select("id, name, plan").eq("is_active", true);
   if (error) throw error;
+  // Tagihan SPP otomatis hanya untuk paket yang memuat modul "finance".
+  const { data: plans } = await admin.from("plans").select("tier, modules");
+  const withFinance = new Set((plans ?? []).filter((p) => (p.modules as string[]).includes("finance")).map((p) => p.tier));
 
   const report: Record<string, unknown>[] = [];
   for (const s of schools ?? []) {
     const r: Record<string, unknown> = { school: s.name };
     try {
       if (isFirst) {
-        if (s.plan !== "free") {
+        if (withFinance.has(s.plan)) {
           const { data } = await admin.rpc("generate_monthly_invoices", { p_school: s.id, p_period: today });
           r.invoices_created = data;
         }

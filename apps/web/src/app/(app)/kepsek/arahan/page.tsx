@@ -1,4 +1,4 @@
-import { requireRole, ROLE_LABEL, type Role } from "@/lib/session";
+import { requireRole, ROLE_LABEL, type Role, requireModule } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { tanggal, waktu } from "@/lib/format";
 import { Button, Card, Empty, Field, Flash, Input, PageHeader, StatusBadge, Textarea } from "@/components/ui";
@@ -19,7 +19,7 @@ async function createDirective(fd: FormData) {
 
 export default async function Directives({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("principal");
+  const { supabase, schoolId } = await requireModule("staff", "principal");
   const [{ data: staff }, { data: directives }] = await Promise.all([
     supabase.from("memberships").select("user_id, role, profiles(full_name)").eq("school_id", schoolId).eq("is_active", true)
       .in("role", ["teacher", "counselor", "finance", "school_admin"]),

@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { getSession, ROLE_LABEL } from "@/lib/session";
-import { NAV, PLATFORM_NAV, foundationNav } from "@/lib/nav";
+import { NAV, PLATFORM_NAV, foundationNav, visibleNav } from "@/lib/nav";
 import { NavLinks } from "@/components/nav-links";
 import { switchRole, signOut } from "./actions";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const { profile, roles, active, supabase, user, scopes } = await getSession();
+  const { profile, roles, active, supabase, user, scopes, modules } = await getSession();
   const { count: unread } = await supabase.from("notifications")
     .select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null);
-  const nav = active ? NAV[active.role] : [];
+  const nav = active ? visibleNav(NAV[active.role], modules) : [];
   // Sekolah yang mematikan aplikasi murid: akun murid hanya melihat pemberitahuan.
   const studentAppOff = active?.role === "student"
     && (await supabase.rpc("student_app_mode", { p_school: active.school_id })).data === "off";

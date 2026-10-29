@@ -1,10 +1,10 @@
-import { requireRole } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { rupiah, tanggal } from "@/lib/format";
 import { myStudent } from "@/lib/queries";
 import { Card, Empty, PageHeader, StatusBadge, Table } from "@/components/ui";
 
 export default async function StudentFees() {
-  const { supabase, user, schoolId } = await requireRole("student");
+  const { supabase, user, schoolId } = await requireModule("finance", "student");
   const me = await myStudent(supabase, user.id, schoolId);
   if (!me) return <Empty>Data murid tidak ditemukan.</Empty>;
   const [{ data: invoices }, { data: fees }] = await Promise.all([

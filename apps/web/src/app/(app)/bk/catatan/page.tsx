@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
 import { Button, Card, Empty, Field, Flash, Input, PageHeader, Select, Textarea } from "@/components/ui";
@@ -14,7 +14,7 @@ async function addNote(fd: FormData) {
 
 export default async function CounselingNotes({ searchParams }: { searchParams: Promise<{ murid?: string; ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("counselor");
+  const { supabase, schoolId } = await requireModule("counseling", "counselor");
   const [{ data: students }, { data: notes }] = await Promise.all([
     supabase.from("students").select("id, full_name").eq("school_id", schoolId).eq("status", "aktif").order("full_name"),
     (() => {

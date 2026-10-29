@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah, tanggal, todayJakarta, waktu } from "@/lib/format";
 import { Button, Card, Field, Flash, Input, PageHeader, Select, StatusBadge, Table, Textarea } from "@/components/ui";
@@ -54,7 +54,7 @@ export default async function InvoicesPage({ searchParams }: {
   searchParams: Promise<{ status?: string; kelas?: string; q?: string; id?: string; ok?: string; err?: string }>;
 }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("finance");
+  const { supabase, schoolId } = await requireModule("finance", "finance");
   const [{ data: classes }, { data: students }, { data: fees }] = await Promise.all([
     supabase.from("classes").select("id, name, academic_years!inner(is_active)").eq("school_id", schoolId).eq("academic_years.is_active", true).order("name"),
     supabase.from("students").select("id, full_name, nis").eq("school_id", schoolId).eq("status", "aktif").order("full_name"),
