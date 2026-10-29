@@ -3,7 +3,8 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Button, Field, Flash, Input } from "@/components/ui";
+import { Field, Flash, Input } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Lupa kata sandi" };
 
@@ -38,7 +39,7 @@ export default async function ForgotPassword({ searchParams }: { searchParams: P
           <Field label="Email">
             <Input id="email" name="email" type="email" autoComplete="email" required placeholder="nama@sekolah.sch.id" />
           </Field>
-          <Button type="submit">Kirim tautan</Button>
+          <SubmitButton pendingLabel="Mengirim…">Kirim tautan</SubmitButton>
         </form>
         <p className="mt-6 text-center text-sm"><Link href="/login" className="font-semibold text-brand">Kembali ke halaman masuk</Link></p>
         <p className="mt-2 text-center text-xs text-muted">Akun murid tanpa email? Minta admin sekolah mengatur ulang kata sandinya.</p>
