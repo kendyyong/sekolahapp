@@ -48,10 +48,10 @@ jobs:
       - name: Hubungkan proyek
         run: npx supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
       - name: Migrasi yang akan dijalankan
-        run: npx supabase db push --dry-run --password "$SUPABASE_DB_PASSWORD"
+        run: npx supabase db push --linked --dry-run --password "$SUPABASE_DB_PASSWORD"
       - name: Terapkan migrasi
         if: inputs.mode == 'jalankan'
-        run: npx supabase db push --password "$SUPABASE_DB_PASSWORD"
+        run: npx supabase db push --linked --password "$SUPABASE_DB_PASSWORD"
       - name: Deploy Edge Functions
         if: inputs.mode == 'jalankan' && inputs.functions
         run: npx supabase functions deploy --project-ref "$PROJECT_REF" --use-api
