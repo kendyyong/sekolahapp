@@ -111,6 +111,8 @@ Authentication → Email Templates: salin isi berkas berikut ke template yang se
 - **Reset Password** ← `supabase/templates/recovery.html`, judul “Atur ulang kata sandi SekolahApp”
 - **Confirm signup** ← `supabase/templates/confirmation.html`, judul “Konfirmasi email SekolahApp”
 
+Cara cepat: workflow **Atur Auth Supabase** (tab Actions) mengatur Site URL, Redirect URLs, SMTP, dan kedua template ini sekaligus lewat Management API. Isi dulu rahasia `SMTP_PASSWORD` (untuk Gmail: App Password dari myaccount.google.com/apppasswords), jalankan mode `cek`, lalu `jalankan`. Isian *platform_admin_email* sekalian mengonfirmasi akun itu dan menjadikannya Pemilik Platform.
+
 Jangan memakai `supabase config push` untuk ini: perintah itu juga mengirim `site_url = localhost` dari `config.toml`.
 
 Uji: buka `/lupa-sandi`, masukkan email sendiri, klik tautan di email, atur kata sandi baru, lalu masuk.

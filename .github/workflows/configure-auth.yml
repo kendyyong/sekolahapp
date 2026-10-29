@@ -1,0 +1,116 @@
+name: Atur Auth Supabase
+
+# Dijalankan manual dari tab Actions → "Atur Auth Supabase" → Run workflow.
+# Mengatur Auth proyek produksi lewat Management API:
+#   - Site URL dan Redirect URLs ke domain web
+#   - SMTP sendiri (default Gmail) supaya email tidak dikirim dari Supabase
+#   - template email Bahasa Indonesia dari supabase/templates
+#   - opsional: menjadikan satu akun Pemilik Platform
+# Rahasia repo: SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_REF, dan SMTP_PASSWORD
+# (untuk Gmail: App Password 16 huruf dari myaccount.google.com/apppasswords).
+# Nilai lain bisa diganti lewat Variables repo: SITE_URL, SMTP_SENDER, SMTP_SENDER_NAME, SMTP_HOST, SMTP_PORT.
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "cek = hanya tampilkan pengaturan sekarang dan rencana; jalankan = terapkan"
+        type: choice
+        options: [cek, jalankan]
+        default: cek
+      smtp:
+        description: "Atur SMTP (butuh rahasia SMTP_PASSWORD)"
+        type: boolean
+        default: true
+      platform_admin_email:
+        description: "Opsional: email akun yang dijadikan Pemilik Platform (sekaligus dikonfirmasi)"
+        type: string
+        default: ""
+
+concurrency:
+  group: configure-auth
+  cancel-in-progress: false
+
+jobs:
+  auth:
+    name: Auth, SMTP & template
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://sekolahapp.wahanamediaberkat.com' }}
+      SMTP_SENDER: ${{ vars.SMTP_SENDER || 'wahanamediaberkat@gmail.com' }}
+      SMTP_SENDER_NAME: ${{ vars.SMTP_SENDER_NAME || 'SekolahApp' }}
+      SMTP_HOST: ${{ vars.SMTP_HOST || 'smtp.gmail.com' }}
+      SMTP_PORT: ${{ vars.SMTP_PORT || '465' }}
+      MODE: ${{ inputs.mode }}
+      WITH_SMTP: ${{ inputs.smtp }}
+      ADMIN_EMAIL: ${{ inputs.platform_admin_email }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Periksa rahasia
+        run: |
+          for v in SUPABASE_ACCESS_TOKEN PROJECT_REF; do
+            if [ -z "${!v}" ]; then echo "::error::Rahasia untuk $v belum diisi di Settings → Secrets and variables → Actions"; exit 1; fi
+          done
+          if [ "$WITH_SMTP" = "true" ] && [ -z "$SMTP_PASSWORD" ]; then
+            echo "::error::Rahasia SMTP_PASSWORD belum diisi. Isi dulu, atau jalankan dengan pilihan SMTP dimatikan."; exit 1
+          fi
+          if [ -n "$ADMIN_EMAIL" ] && ! [[ "$ADMIN_EMAIL" =~ ^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$ ]]; then
+            echo "::error::Email Pemilik Platform tidak valid"; exit 1
+          fi
+      - name: Pengaturan sekarang
+        run: |
+          curl -fsS -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" > current.json
+          jq '{site_url, uri_allow_list, smtp_host, smtp_port, smtp_user, smtp_admin_email, smtp_sender_name,
+               rate_limit_email_sent, mailer_subjects_confirmation, mailer_subjects_recovery}' current.json
+      - name: Susun perubahan
+        run: |
+          # Redirect URLs: pertahankan yang sudah ada, tambahkan milik domain web.
+          allow=$(jq -r --arg a "$SITE_URL" --arg b "$SITE_URL/auth/konfirmasi" \
+            '[(.uri_allow_list // "" | split(",") | map(select(. != ""))) + [$a, $b] | unique[]] | join(",")' current.json)
+          jq -n \
+            --arg site "$SITE_URL" --arg allow "$allow" \
+            --rawfile conf supabase/templates/confirmation.html \
+            --rawfile rec supabase/templates/recovery.html \
+            '{site_url: $site, uri_allow_list: $allow,
+              mailer_subjects_confirmation: "Konfirmasi email SekolahApp",
+              mailer_templates_confirmation_content: $conf,
+              mailer_subjects_recovery: "Atur ulang kata sandi SekolahApp",
+              mailer_templates_recovery_content: $rec}' > patch.json
+          if [ "$WITH_SMTP" = "true" ]; then
+            jq --arg host "$SMTP_HOST" --arg port "$SMTP_PORT" --arg user "$SMTP_SENDER" \
+               --arg name "$SMTP_SENDER_NAME" --arg pass "$SMTP_PASSWORD" \
+               '. + {smtp_host: $host, smtp_port: $port, smtp_user: $user, smtp_pass: $pass,
+                     smtp_admin_email: $user, smtp_sender_name: $name}' patch.json > p && mv p patch.json
+          fi
+          echo "Rencana perubahan (kata sandi disembunyikan):"
+          jq 'del(.mailer_templates_confirmation_content, .mailer_templates_recovery_content) | if .smtp_pass then .smtp_pass = "***" else . end' patch.json
+      - name: Terapkan pengaturan
+        if: inputs.mode == 'jalankan'
+        run: |
+          curl -fsS -X PATCH -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
+            --data @patch.json "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
+            | jq '{site_url, uri_allow_list, smtp_host, smtp_port, smtp_admin_email, smtp_sender_name,
+                   mailer_subjects_confirmation, mailer_subjects_recovery}'
+      - name: Pemilik Platform
+        if: inputs.mode == 'jalankan' && inputs.platform_admin_email != ''
+        run: |
+          sql="with u as (
+                 update auth.users set email_confirmed_at = coalesce(email_confirmed_at, now())
+                 where lower(email) = lower('$ADMIN_EMAIL') returning id)
+               insert into public.platform_admins (user_id) select id from u
+               on conflict (user_id) do nothing returning user_id;"
+          res=$(jq -n --arg q "$sql" '{query: $q}' | curl -fsS -X POST -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" --data @- "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query")
+          echo "$res"
+          check=$(jq -n --arg q "select count(*)::int as n from public.platform_admins p join auth.users u on u.id = p.user_id where lower(u.email) = lower('$ADMIN_EMAIL');" '{query: $q}' \
+            | curl -fsS -X POST -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
+              --data @- "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query")
+          echo "$check"
+          if [ "$(echo "$check" | jq '.[0].n')" != "1" ]; then
+            echo "::error::Akun $ADMIN_EMAIL belum ada. Daftar dulu di /daftar, lalu jalankan lagi."; exit 1
+          fi
