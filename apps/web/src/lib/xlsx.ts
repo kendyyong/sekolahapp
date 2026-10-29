@@ -1,8 +1,7 @@
 import "server-only";
-import writeXlsxFile, { type Cell, type Row } from "write-excel-file/node";
+import writeXlsxFile, { type Cell, type Row, type Sheet } from "write-excel-file/node";
 
-export interface Report {
-  filename: string;
+export interface ReportSheet {
   sheet: string;
   /** Baris judul di atas tabel, misalnya nama sekolah dan periode. */
   title: string[];
@@ -10,22 +9,32 @@ export interface Report {
   rows: Cell[][];
   widths?: number[];
 }
+export interface Report extends ReportSheet { filename: string }
 
-/** Berkas Excel (.xlsx) dengan baris judul, kepala tabel tebal, dan kepala yang tetap terlihat saat digulir. */
-export async function xlsxResponse(r: Report) {
-  const data: Row[] = [
-    ...r.title.map((t, i): Row => [{ value: t, fontWeight: i === 0 ? "bold" : undefined, fontSize: i === 0 ? 14 : undefined }]),
-    [],
-    r.head.map((h) => ({ value: h, fontWeight: "bold", backgroundColor: "#E8EEF9", wrap: true })),
-    ...r.rows,
-  ];
-  const buf = await writeXlsxFile(data, {
-    sheet: r.sheet.slice(0, 31),
+function sheetOf(r: ReportSheet): Sheet<Buffer> {
+  return {
+    data: [
+      ...r.title.map((t, i): Row => [{ value: t, fontWeight: i === 0 ? "bold" : undefined, fontSize: i === 0 ? 14 : undefined }]),
+      [],
+      r.head.map((h) => ({ value: h, fontWeight: "bold", backgroundColor: "#E8EEF9", wrap: true })),
+      ...r.rows,
+    ],
+    sheet: r.sheet.replace(/[\\/?*:[\]]/g, "-").slice(0, 31),
     dateFormat: "dd/mm/yyyy",
     columns: r.widths?.map((width) => ({ width })),
     stickyRowsCount: r.title.length + 2,
-  }).toBuffer();
-  const name = r.filename.replace(/[^\w.-]+/g, "-");
+  };
+}
+
+/** Berkas Excel (.xlsx) dengan baris judul, kepala tabel tebal, dan kepala yang tetap terlihat saat digulir. */
+export async function xlsxResponse(r: Report) {
+  return xlsxWorkbook(r.filename, [r]);
+}
+
+/** Satu berkas Excel berisi beberapa lembar kerja. */
+export async function xlsxWorkbook(filename: string, sheets: ReportSheet[]) {
+  const buf = await writeXlsxFile(sheets.map(sheetOf)).toBuffer();
+  const name = filename.replace(/[^\w.-]+/g, "-");
   return new Response(new Uint8Array(buf), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

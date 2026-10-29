@@ -2,6 +2,7 @@ import type { LetterheadSchool } from "@/components/letterhead";
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { todayJakarta } from "@/lib/format";
+import type { ProjectReport } from "@/lib/kokurikuler";
 
 export interface Term {
   id: string; name: string; semester: number; starts_on: string; ends_on: string;
@@ -48,4 +49,16 @@ export interface ReportView {
   };
   kktp: number;
   grades: { subject: string; score: number | null; description: string | null }[];
+  /** Projek kokurikuler/P5 semester ini (RPC kokurikuler_report). */
+  projects: ProjectReport[];
+}
+
+/** Rapor satu murid beserta bagian projeknya. Hak lihat diperiksa di database. */
+export async function loadReport(sb: SupabaseClient, term: string, student: string) {
+  const [view, projects] = await Promise.all([
+    sb.rpc("report_card_view", { p_term: term, p_student: student }),
+    sb.rpc("kokurikuler_report", { p_term: term, p_student: student }),
+  ]);
+  if (view.error || !view.data) return { data: null, error: view.error };
+  return { data: { ...(view.data as Omit<ReportView, "projects">), projects: (projects.data ?? []) as ProjectReport[] } as ReportView, error: null };
 }

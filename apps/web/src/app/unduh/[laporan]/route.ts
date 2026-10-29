@@ -3,8 +3,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ROLE_LABEL, type Role, requireModule, requireRole } from "@/lib/session";
 import { tanggal, todayJakarta, waktu } from "@/lib/format";
 import { classRoster } from "@/lib/queries";
-import { fetchAll, monthDays, monthLabel, xlsxResponse } from "@/lib/xlsx";
+import { fetchAll, monthDays, monthLabel, xlsxResponse, xlsxWorkbook } from "@/lib/xlsx";
 import { FEE_LABEL, PPDB_STATUS, RELATIONS, type AdmissionStatus } from "@/lib/ppdb";
+import { PROMOTION_LABEL } from "@/lib/report";
+import { FRAMEWORK_SHORT, LEVEL_LABEL, projectNarrative, type Framework, type Level } from "@/lib/kokurikuler";
 
 // Unduhan Excel untuk laporan yang sering diminta dinas, yayasan, dan rapat sekolah.
 // Data diambil dengan sesi pengguna, jadi RLS tetap membatasi baris yang terlihat.
@@ -235,6 +237,109 @@ async function ledger(req: NextRequest) {
   });
 }
 
+/**
+ * Data rapor satu kelas untuk dipindahkan ke aplikasi e-Rapor Kemendikdasmen: nilai akhir,
+ * deskripsi capaian, kokurikuler/P5, serta kehadiran dan catatan wali kelas, masing-masing satu lembar.
+ */
+async function eRapor(req: NextRequest) {
+  const { supabase, active } = await requireModule("grades", "teacher", "school_admin", "principal");
+  const classId = req.nextUrl.searchParams.get("kelas") ?? "";
+  const termId = req.nextUrl.searchParams.get("semester") ?? "";
+  const [{ data: klass }, { data: term }, { data: tas }, { data: enr }, { data: cards }, { data: projects }, { data: aspects }] = await Promise.all([
+    supabase.from("classes").select("name").eq("id", classId).eq("school_id", active.school_id).maybeSingle(),
+    supabase.from("terms").select("name, semester, academic_years(name)").eq("id", termId).maybeSingle(),
+    supabase.from("teaching_assignments").select("id, subjects(name, report_order)").eq("class_id", classId),
+    supabase.from("enrollments").select("roll_number, students!inner(id, full_name, nis, nisn, status)").eq("class_id", classId)
+      .eq("students.status", "aktif").order("roll_number", { nullsFirst: false }),
+    supabase.from("report_cards").select("student_id, sick, permit, absent, homeroom_note, extracurriculars, promotion, status")
+      .eq("term_id", termId).eq("class_id", classId),
+    supabase.from("kokurikuler_projects").select("id, title, theme, framework, aspect_ids").eq("term_id", termId)
+      .contains("class_ids", [classId]).order("created_at"),
+    supabase.from("profile_aspects").select("id, dimension, element, position").order("position"),
+  ]);
+  if (!klass || !term) return new Response("Kelas atau semester tidak ditemukan", { status: 404 });
+  const students = ((enr ?? []) as any[]).map((e, i) => ({ no: e.roll_number ?? i + 1, ...e.students }) as {
+    no: number; id: string; full_name: string; nis: string | null; nisn: string | null;
+  });
+  const ids = (s: { nis: string | null; nisn: string | null; full_name: string }) => [s.nis ?? "", s.nisn ?? "", s.full_name];
+  const subjects = ((tas ?? []) as any[]).sort((a, b) =>
+    (a.subjects?.report_order ?? 100) - (b.subjects?.report_order ?? 100) || a.subjects?.name.localeCompare(b.subjects?.name));
+  const [grades, results] = await Promise.all([
+    subjects.length ? fetchAll<{ student_id: string; teaching_assignment_id: string; score: number | null; description: string | null }>((from, to) =>
+      supabase.from("report_grades").select("student_id, teaching_assignment_id, score, description").eq("term_id", termId)
+        .in("teaching_assignment_id", subjects.map((t) => t.id)).order("id").range(from, to)) : [],
+    projects?.length ? fetchAll<{ project_id: string; student_id: string; levels: Record<string, Level>; note: string | null }>((from, to) =>
+      supabase.from("kokurikuler_results").select("project_id, student_id, levels, note").in("project_id", projects.map((p) => p.id))
+        .order("student_id").range(from, to)) : [],
+  ]);
+  const grade = new Map(grades.map((g) => [`${g.student_id}|${g.teaching_assignment_id}`, g]));
+  const card = new Map((cards ?? []).map((c) => [c.student_id, c]));
+  const result = new Map(results.map((r) => [`${r.project_id}|${r.student_id}`, r]));
+  const aspectById = new Map((aspects ?? []).map((a) => [a.id as string, a as { id: string; dimension: string; element: string | null; position: number }]));
+  const score = (v: number | null | undefined) => (v == null ? "" : Math.round(Number(v)));
+  const year = (term.academic_years as unknown as { name: string } | null)?.name ?? "";
+  const heading = (what: string) => [active.school_name, `${what} · Kelas ${klass.name} · Semester ${term.semester} (${term.name}) ${year}`];
+  const person = ["No", "NIS", "NISN", "Nama"];
+  const personW = [5, 12, 13, 28];
+
+  const projectRows = students.flatMap((s) => (projects ?? []).map((p) => {
+    const r = result.get(`${p.id}|${s.id}`);
+    const used = (p.aspect_ids as string[]).map((a) => aspectById.get(a)).filter((a) => !!a)
+      .sort((a, b) => a!.position - b!.position).map((a) => ({ ...a!, level: r?.levels?.[a!.id] ?? null }));
+    return { s, p, r, used };
+  }));
+
+  return xlsxWorkbook(`erapor-${klass.name}-semester-${term.semester}.xlsx`, [
+    {
+      sheet: "Nilai Akhir",
+      title: [...heading("Nilai akhir"), "Salin kolom nilai ke templat impor nilai di aplikasi e-Rapor sesuai urutan mapelnya."],
+      head: [...person, ...subjects.map((t) => t.subjects?.name ?? "")],
+      rows: students.map((s) => [s.no, ...ids(s), ...subjects.map((t) => score(grade.get(`${s.id}|${t.id}`)?.score))]),
+      widths: [...personW, ...subjects.map(() => 11)],
+    },
+    {
+      sheet: "Deskripsi Capaian",
+      title: heading("Nilai & deskripsi capaian kompetensi"),
+      head: [...person, "Mata pelajaran", "Nilai akhir", "Capaian kompetensi"],
+      rows: students.flatMap((s) => subjects.map((t) => {
+        const g = grade.get(`${s.id}|${t.id}`);
+        return [s.no, ...ids(s), t.subjects?.name ?? "", score(g?.score), { value: g?.description ?? "", wrap: true }];
+      })),
+      widths: [...personW, 22, 10, 80],
+    },
+    {
+      sheet: "Kokurikuler",
+      title: [...heading("Kokurikuler / P5"), "Deskripsi disusun dari predikat tiap dimensi; catatan proses dari koordinator atau wali kelas."],
+      head: [...person, "Projek", "Kerangka", "Tema", "Deskripsi", "Catatan proses"],
+      rows: projectRows.map(({ s, p, r, used }) => [s.no, ...ids(s), p.title, FRAMEWORK_SHORT[p.framework as Framework], p.theme ?? "",
+        { value: projectNarrative(s.full_name.split(" ")[0], { aspects: used }), wrap: true }, { value: r?.note ?? "", wrap: true }]),
+      widths: [...personW, 26, 12, 22, 60, 40],
+    },
+    {
+      sheet: "Predikat Dimensi",
+      title: [...heading("Predikat kokurikuler / P5 per dimensi"), "SB sangat berkembang · BSH berkembang sesuai harapan · MB mulai berkembang · BB belum berkembang"],
+      head: [...person, "Projek", "Dimensi", "Elemen", "Predikat", "Keterangan"],
+      rows: projectRows.flatMap(({ s, p, used }) => used.map((a) => [s.no, ...ids(s), p.title, a.dimension, a.element ?? "",
+        a.level ?? "", a.level ? LEVEL_LABEL[a.level] : ""])),
+      widths: [...personW, 26, 36, 40, 9, 24],
+    },
+    {
+      sheet: "Kehadiran & Catatan",
+      title: heading("Ketidakhadiran, ekstrakurikuler, dan catatan wali kelas"),
+      head: [...person, "Sakit", "Izin", "Tanpa keterangan", "Ekstrakurikuler", "Catatan wali kelas", "Keputusan", "Status rapor"],
+      rows: students.map((s) => {
+        const c = card.get(s.id);
+        const ekskul = ((c?.extracurriculars ?? []) as { name: string; grade?: string; note?: string }[])
+          .map((e) => [e.name, e.grade && `(${e.grade})`, e.note && `: ${e.note}`].filter(Boolean).join(" ")).join("; ");
+        return [s.no, ...ids(s), c?.sick ?? "", c?.permit ?? "", c?.absent ?? "", { value: ekskul, wrap: true },
+          { value: c?.homeroom_note ?? "", wrap: true }, c?.promotion ? PROMOTION_LABEL[c.promotion] : "",
+          c ? (c.status === "final" ? "Final" : "Draf") : "Belum dibuat"];
+      }),
+      widths: [...personW, 7, 7, 10, 36, 60, 14, 12],
+    },
+  ]);
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ laporan: string }> }) {
   const { laporan } = await params;
   switch (laporan) {
@@ -242,6 +347,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ lapo
     case "kehadiran-pegawai": return staffAttendance(req);
     case "tunggakan": return arrears();
     case "leger": return ledger(req);
+    case "erapor": return eRapor(req);
     case "ppdb": return admissions(req);
     case "ujian": return examResults(req);
     case "murid": {

@@ -1,21 +1,22 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { classRoster } from "@/lib/queries";
-import type { ReportView } from "@/lib/report";
+import { loadReport, type ReportView } from "@/lib/report";
 import { ReportCard } from "@/components/report-card";
 import { Empty, PageHeader } from "@/components/ui";
 import { PrintButton } from "@/components/print-button";
 
 // Tampilan & cetak rapor. Hak lihat diperiksa di database (report_card_view):
 // staf yang berhak melihat murid, atau murid/orang tua setelah rapor terbit.
+// Bagian kokurikuler/P5 dari kokurikuler_report dengan hak lihat yang sama.
 export default async function ReportPage({ searchParams }: { searchParams: Promise<{ semester?: string; murid?: string; kelas?: string }> }) {
   const sp = await searchParams;
   const { supabase } = await getSession();
   if (!sp.semester || !(sp.murid || sp.kelas)) return <Empty>Pilih rapor dari menu Rapor.</Empty>;
 
   const ids = sp.murid ? [sp.murid] : (await classRoster(supabase, sp.kelas!)).filter((s) => s.status === "aktif").map((s) => s.id);
-  const results = await Promise.all(ids.map((id) => supabase.rpc("report_card_view", { p_term: sp.semester, p_student: id })));
-  const reports = results.map((r) => r.data as ReportView | null).filter((r): r is ReportView => !!r);
+  const results = await Promise.all(ids.map((id) => loadReport(supabase, sp.semester!, id)));
+  const reports = results.map((r) => r.data).filter((r): r is ReportView => !!r);
   const error = results.find((r) => r.error)?.error?.message;
 
   return (

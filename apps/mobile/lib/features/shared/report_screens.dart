@@ -6,6 +6,20 @@ import '../../core/supa.dart';
 import '../../core/ui.dart';
 
 const _promotion = {'naik': 'Naik kelas', 'tinggal': 'Tinggal kelas', 'lulus': 'Lulus', 'tidak_lulus': 'Tidak lulus'};
+const _frameworkTitle = {'kokurikuler': 'Kokurikuler', 'p5': 'Projek Penguatan Profil Pelajar Pancasila'};
+const _levelPhrase = {'SB': 'sangat berkembang', 'BSH': 'berkembang sesuai harapan', 'MB': 'mulai berkembang', 'BB': 'belum berkembang'};
+
+/// Deskripsi capaian projek, sama dengan versi web (lib/kokurikuler.ts projectNarrative).
+String projectNarrative(String name, List aspects) {
+  String lowerFirst(String s) => s.isEmpty ? s : s[0].toLowerCase() + s.substring(1);
+  String join(List<String> xs) => xs.length <= 1 ? xs.join() : '${xs.sublist(0, xs.length - 1).join(', ')} dan ${xs.last}';
+  final parts = [
+    for (final lv in _levelPhrase.keys)
+      if (aspects.any((a) => a['level'] == lv))
+        '${_levelPhrase[lv]} dalam ${join([for (final a in aspects) if (a['level'] == lv) lowerFirst((a['element'] ?? a['dimension']) as String)])}',
+  ];
+  return parts.isEmpty ? '' : 'Ananda $name ${parts.join('; ')}.';
+}
 
 /// Daftar rapor yang sudah diterbitkan sekolah untuk satu murid (RLS hanya mengembalikan rapor final & terbit).
 class ReportsSection extends StatelessWidget {
@@ -52,11 +66,21 @@ class ReportDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text('Rapor $title')),
         body: Loader(
-          load: () async => Map<String, dynamic>.from(await sb.rpc('report_card_view', params: {'p_term': termId, 'p_student': studentId})),
+          load: () async {
+            final params = {'p_term': termId, 'p_student': studentId};
+            final [view, projects] = await Future.wait([sb.rpc('report_card_view', params: params), sb.rpc('kokurikuler_report', params: params)]);
+            return {...Map<String, dynamic>.from(view), 'projects': projects ?? const []};
+          },
           builder: (context, r, _) {
             final card = r['card'] as Map;
             final kktp = (r['kktp'] as num?) ?? 75;
             final extras = (card['extracurriculars'] as List?) ?? const [];
+            final projects = r['projects'] as List;
+            final firstName = (r['student']['full_name'] as String).split(' ').first;
+            String narrative(Map p) {
+              final t = projectNarrative(firstName, (p['aspects'] as List?) ?? const []);
+              return t.isEmpty ? 'Belum dinilai.' : t;
+            }
             return PageList(children: [
               Text(r['school']['name'], style: const TextStyle(color: Palette.muted)),
               Text('Kelas ${r['class']['name']} · Semester ${r['term']['semester']} (${r['term']['name']}) · ${r['term']['year']}',
@@ -81,6 +105,24 @@ class ReportDetailScreen extends StatelessWidget {
                     ),
                 ]),
               ),
+              for (final fw in _frameworkTitle.keys)
+                if (projects.any((p) => p['framework'] == fw))
+                  Section(
+                    title: _frameworkTitle[fw]!,
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      for (final p in projects.where((p) => p['framework'] == fw))
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(p['title'], style: const TextStyle(fontWeight: FontWeight.w700)),
+                            if (p['theme'] != null) Text('Tema: ${p['theme']}', style: const TextStyle(fontSize: 12, color: Palette.muted)),
+                            const SizedBox(height: 4),
+                            Text(narrative(p)),
+                            if (p['note'] != null) Text(p['note'], style: const TextStyle(color: Palette.muted)),
+                          ]),
+                        ),
+                    ]),
+                  ),
               Section(
                 title: 'Ketidakhadiran',
                 child: Row(children: [

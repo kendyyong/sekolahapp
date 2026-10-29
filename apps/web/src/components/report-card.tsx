@@ -1,5 +1,6 @@
 import { PROMOTION_LABEL, type ReportView } from "@/lib/report";
 import { Letterhead } from "@/components/letterhead";
+import { FRAMEWORK_TITLE, projectNarrative } from "@/lib/kokurikuler";
 
 const longDate = (d: string | null) =>
   d ? new Date(d + "T00:00:00+07:00").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" }) : "";
@@ -58,6 +59,32 @@ export function ReportCard({ r }: { r: ReportView }) {
           ))}
         </tbody>
       </table>
+
+      {(["kokurikuler", "p5"] as const).map((fw) => {
+        const projects = (r.projects ?? []).filter((p) => p.framework === fw);
+        if (!projects.length) return null;
+        return (
+          <table key={fw} className="mt-4 w-full border-collapse break-inside-avoid">
+            <thead>
+              <tr className="bg-paper print:bg-transparent">
+                <th className={`${row} w-8`}>No</th><th className={`${row} text-left`}>{FRAMEWORK_TITLE[fw]}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {projects.map((p, i) => (
+                <tr key={p.id}>
+                  <td className={`${row} text-center`}>{i + 1}</td>
+                  <td className={row}>
+                    <div className="font-semibold">{p.title}{p.theme && <span className="font-normal"> · Tema: {p.theme}</span>}</div>
+                    <p className="mt-0.5">{projectNarrative(r.student.full_name.split(" ")[0], p) || "Belum dinilai."}</p>
+                    {p.note && <p className="mt-0.5 whitespace-pre-line">{p.note}</p>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+      })}
 
       <table className="mt-4 w-full border-collapse">
         <thead>

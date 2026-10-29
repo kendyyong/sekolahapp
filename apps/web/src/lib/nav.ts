@@ -20,6 +20,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/admin/mapel", label: "Mapel & Pengajar", icon: "book" },
     { href: "/admin/murid", label: "Data Murid", icon: "users" },
     { href: "/admin/rapor", label: "E-Rapor", icon: "scroll", module: "grades" },
+    { href: "/kokurikuler", label: "Kokurikuler & P5", icon: "sprout", module: "grades" },
     { href: "/admin/ppdb", label: "PPDB Online", icon: "userPlus", module: "ppdb" },
     { href: "/admin/kartu", label: "Kartu Pelajar", icon: "idCard", group: "Operasional" },
     { href: "/kios", label: "Kios Absen", icon: "scan" },
@@ -33,6 +34,7 @@ export const NAV: Record<Role, NavItem[]> = {
   principal: [
     { href: "/kepsek", label: "Dasbor", icon: "dashboard", module: "dashboard", group: "Utama" },
     { href: "/admin/rapor", label: "E-Rapor", icon: "scroll", module: "grades" },
+    { href: "/kokurikuler", label: "Kokurikuler & P5", icon: "sprout", module: "grades" },
     { href: "/admin/ppdb", label: "PPDB Online", icon: "userPlus", module: "ppdb" },
     { href: "/kepsek/cuti", label: "Persetujuan Cuti", icon: "calendarCheck", module: "staff", group: "Kepegawaian" },
     { href: "/kepsek/arahan", label: "Arahan untuk Guru", icon: "clipboardList", module: "staff" },
@@ -45,6 +47,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/guru/tugas", label: "Tugas & PR", icon: "notebookPen" },
     { href: "/guru/ujian", label: "Ujian Online", icon: "timer", module: "cbt" },
     { href: "/guru/nilai", label: "Nilai & Rapor", icon: "graduation", module: "grades" },
+    { href: "/kokurikuler", label: "Kokurikuler & P5", icon: "sprout", module: "grades" },
     { href: "/guru/rapor", label: "Rapor Kelas (Wali)", icon: "scroll", module: "grades" },
     { href: "/guru/kelas-online", label: "Kelas Online", icon: "video" },
     { href: "/guru/kelompok", label: "Verifikasi Kelompok", icon: "usersRound" },
