@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/session";
+import { requireModule } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { tanggal, waktu } from "@/lib/format";
 import { Button, Empty, Flash, PageHeader, Select, StatusBadge, Textarea } from "@/components/ui";
@@ -11,7 +11,7 @@ async function report(fd: FormData) {
 
 export default async function MyDirectives({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, user } = await requireRole("teacher", "counselor", "finance", "school_admin");
+  const { supabase, user } = await requireModule("staff", "teacher", "counselor", "finance", "school_admin");
   const { data } = await supabase.from("directive_recipients")
     .select("status, report, updated_at, directives(id, title, body, due_on, created_at, profiles:created_by(full_name))")
     .eq("user_id", user.id).order("updated_at", { ascending: false });

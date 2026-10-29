@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { num, run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
 import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
@@ -14,7 +14,7 @@ async function addBehavior(fd: FormData) {
 
 export default async function CounselorHome({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("counselor");
+  const { supabase, schoolId } = await requireModule("counseling", "counselor");
   const today = todayJakarta();
   const from = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
 

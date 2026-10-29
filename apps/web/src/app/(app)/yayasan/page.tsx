@@ -1,6 +1,6 @@
 import { requireFoundation } from "@/lib/session";
 import { rupiah, tanggal, todayJakarta } from "@/lib/format";
-import { Badge, Card, PageHeader, Stat, Table } from "@/components/ui";
+import { Badge, Card, Empty, PageHeader, Stat, Table } from "@/components/ui";
 import { PLAN_LABEL, PLAN_TONE } from "../platform/plans";
 
 const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "â€“");
@@ -8,6 +8,13 @@ const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "â€
 export default async function FoundationHome({ searchParams }: { searchParams: Promise<{ f?: string }> }) {
   const sp = await searchParams;
   const { supabase, foundation } = await requireFoundation(sp.f);
+  const { data: allowed } = await supabase.rpc("foundation_has_module", { p_foundation: foundation.id });
+  if (!allowed) return (
+    <>
+      <PageHeader title={foundation.name} />
+      <Empty>Dasbor yayasan tersedia di paket Enterprise. Hubungi tim SekolahApp untuk mengaktifkannya bagi sekolah-sekolah yayasan Anda.</Empty>
+    </>
+  );
   const { data } = await supabase.rpc("foundation_overview", { p_foundation: foundation.id });
   const rows = (data ?? []) as any[];
   const total = (k: string) => rows.reduce((n, r) => n + Number(r[k] ?? 0), 0);

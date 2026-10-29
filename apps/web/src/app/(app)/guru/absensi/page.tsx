@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/session";
 import { run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
 import { classRoster, myClasses } from "@/lib/queries";
-import { Button, Card, Empty, Field, Flash, Input, PageHeader, Select, StatusBadge, Table } from "@/components/ui";
+import { Button, Card, DownloadLink, Empty, Field, Flash, Input, PageHeader, Select, StatusBadge, Table } from "@/components/ui";
 
 const STATUSES = ["hadir", "terlambat", "izin", "sakit", "alpa"] as const;
 
@@ -53,6 +53,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
         </Field>
         <Field label="Tanggal"><Input id="tanggal" name="tanggal" type="date" defaultValue={date} /></Field>
         <Button variant="secondary" type="submit">Tampilkan</Button>
+        {classId && <DownloadLink href={`/unduh/absensi-kelas?kelas=${classId}&bulan=${date.slice(0, 7)}`}>Rekap bulan ini (Excel)</DownloadLink>}
       </form>
 
       {!classId ? <Empty>Anda belum mengajar kelas mana pun.</Empty> : (

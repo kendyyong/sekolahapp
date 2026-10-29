@@ -60,7 +60,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
             <SchoolFields />
           </fieldset>
           <Button type="submit" className="mt-2">Daftar & buka dasbor</Button>
-          <p className="text-center text-xs text-muted">Dengan mendaftar, Anda menyetujui syarat layanan dan kebijakan privasi SekolahApp.</p>
+          <p className="text-center text-xs text-muted">Dengan mendaftar, Anda menyetujui <Link href="/syarat" className="font-semibold text-brand">Syarat Layanan</Link> dan <Link href="/privasi" className="font-semibold text-brand">Kebijakan Privasi</Link> SekolahApp, termasuk kewajiban sekolah memperoleh persetujuan orang tua untuk data murid.</p>
         </form>
         <p className="mt-6 text-center text-sm text-muted">Sudah punya akun? <Link href="/login" className="font-semibold text-brand">Masuk</Link></p>
       </div>

@@ -36,6 +36,9 @@ class AppSession extends ChangeNotifier {
   RoleOption? active;
   bool loading = false;
 
+  /// Modul paket langganan sekolah aktif (core, staff, finance, …).
+  Set<String> modules = {};
+
   String get schoolId => active!.schoolId;
   String get firstName => (profile?['full_name'] as String? ?? '').split(' ').first;
 
@@ -56,15 +59,22 @@ class AppSession extends ChangeNotifier {
       active = roles.where((r) => r.key == saved).firstOrNull ??
           roles.where((r) => mobileRoles.contains(r.role)).firstOrNull ??
           roles.firstOrNull;
+      await _loadModules();
     } finally {
       loading = false;
       notifyListeners();
     }
   }
 
+  Future<void> _loadModules() async {
+    final a = active;
+    modules = a == null ? {} : {...(await sb.rpc('school_modules', params: {'p_school': a.schoolId}) as List).cast<String>()};
+  }
+
   Future<void> switchTo(RoleOption r) async {
     active = r;
     (await SharedPreferences.getInstance()).setString(_prefKey, r.key);
+    await _loadModules();
     notifyListeners();
   }
 
@@ -73,6 +83,7 @@ class AppSession extends ChangeNotifier {
     profile = null;
     roles = [];
     active = null;
+    modules = {};
     notifyListeners();
   }
 }

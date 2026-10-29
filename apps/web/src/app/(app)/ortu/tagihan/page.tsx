@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { invokeFunction, str } from "@/lib/actions";
 import { rupiah, tanggal, waktu } from "@/lib/format";
 import { myChildren } from "@/lib/queries";
@@ -36,7 +36,7 @@ async function payOnline(fd: FormData) {
 
 export default async function GuardianInvoices({ searchParams }: { searchParams: Promise<{ anak?: string; id?: string; ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, user, schoolId } = await requireRole("guardian");
+  const { supabase, user, schoolId } = await requireModule("finance", "guardian");
   const children = await myChildren(supabase, user.id, schoolId);
   const child = pickChild(children, sp.anak);
   if (!child) return (<><PageHeader title="Tagihan" /><Empty>Akun Anda belum ditautkan ke data murid.</Empty></>);

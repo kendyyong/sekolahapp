@@ -17,6 +17,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final _name = TextEditingController(text: session.profile?['full_name']);
   late final _phone = TextEditingController(text: session.profile?['phone']);
   final _password = TextEditingController();
+  bool? _deletionPending;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDeletion();
+  }
+
+  Future<void> _loadDeletion() async {
+    final row = await sb.from('account_deletion_requests').select('id').eq('user_id', session.userId).eq('status', 'pending').maybeSingle();
+    if (mounted) setState(() => _deletionPending = row != null);
+  }
+
+  // Kebijakan Google Play & UU PDP: pengguna harus bisa meminta hapus akun dari dalam aplikasi.
+  Future<void> _requestDeletion() async {
+    final reason = TextEditingController();
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Hapus akun?'),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          const Text('Akun dan data pribadi Anda dihapus paling lambat 14 hari. Catatan pendidikan yang wajib disimpan sekolah tetap ada tanpa terhubung ke akun Anda.'),
+          const SizedBox(height: 12),
+          TextField(controller: reason, maxLength: 500, decoration: const InputDecoration(labelText: 'Alasan (opsional)')),
+        ]),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Batal')),
+          FilledButton(style: FilledButton.styleFrom(backgroundColor: Palette.bad), onPressed: () => Navigator.pop(ctx, true), child: const Text('Minta hapus akun')),
+        ],
+      ),
+    );
+    if (yes != true || !mounted) return;
+    if (await act(context, () => sb.rpc('request_account_deletion', params: {'p_reason': reason.text.trim()}),
+        ok: 'Permintaan hapus akun terkirim.')) {
+      _loadDeletion();
+    }
+  }
+
+  Future<void> _cancelDeletion() async {
+    if (await act(context, () => sb.rpc('cancel_account_deletion'), ok: 'Permintaan hapus akun dibatalkan.')) _loadDeletion();
+  }
 
   Future<void> _save() async {
     final ok = await act(context, () async {
@@ -75,6 +116,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (context.mounted) Navigator.popUntil(context, (r) => r.isFirst);
             },
           ),
+          const SizedBox(height: 8),
+          if (_deletionPending == true)
+            TextButton(onPressed: _cancelDeletion, child: const Text('Permintaan hapus akun sedang diproses · Batalkan'))
+          else if (_deletionPending == false)
+            TextButton(onPressed: _requestDeletion, style: TextButton.styleFrom(foregroundColor: Palette.bad), child: const Text('Hapus akun')),
         ]),
       );
 }

@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/session";
+import { requireRole, requireModule } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah, tanggal } from "@/lib/format";
 import { Button, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
@@ -20,7 +20,7 @@ async function removeDiscount(fd: FormData) {
 
 export default async function Discounts({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("finance");
+  const { supabase, schoolId } = await requireModule("finance", "finance");
   const [{ data: rows }, { data: students }, { data: fees }] = await Promise.all([
     supabase.from("student_discounts").select("id, kind, value, reason, valid_from, valid_to, students(full_name), fee_types(name)")
       .eq("school_id", schoolId).order("created_at", { ascending: false }),

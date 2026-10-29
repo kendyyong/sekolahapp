@@ -13,14 +13,24 @@ async function review(fd: FormData) {
     sb.rpc("review_plan_change", { p_id: str(fd, "id"), p_approve: approve, p_note: optStr(fd, "note") }));
 }
 
+async function reviewDeletion(fd: FormData) {
+  "use server";
+  await requirePlatform();
+  const done = str(fd, "decision") === "done";
+  await run("/platform", done ? "Permintaan hapus akun ditandai selesai." : "Permintaan hapus akun ditolak.", (sb) =>
+    sb.rpc("review_account_deletion", { p_id: str(fd, "id"), p_done: done, p_note: optStr(fd, "note") }));
+}
+
 export default async function PlatformHome({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
   const { supabase } = await requirePlatform();
-  const [{ data: o }, { data: requests }, { data: schools }] = await Promise.all([
+  const [{ data: o }, { data: requests }, { data: schools }, { data: deletions }] = await Promise.all([
     supabase.rpc("platform_overview"),
     supabase.from("plan_change_requests").select("id, from_tier, to_tier, note, created_at, schools(name), profiles:requested_by(full_name)")
       .eq("status", "pending").order("created_at"),
     supabase.rpc("platform_schools"),
+    supabase.from("account_deletion_requests").select("id, email, full_name, reason, created_at")
+      .eq("status", "pending").order("created_at"),
   ]);
   const ov = (o ?? {}) as Record<string, any>;
   const newest = ((schools ?? []) as any[]).slice(0, 6);
@@ -63,6 +73,30 @@ export default async function PlatformHome({ searchParams }: { searchParams: Pro
               </ul>
             )}
           </Card>
+          {!!deletions?.length && (
+            <Card title="Permintaan hapus akun">
+              <p className="mb-2 text-sm text-muted">
+                Hapus pengguna di Supabase Auth (Authentication → Users), lalu tandai selesai. Batas waktu 14 hari sejak permintaan.
+              </p>
+              <ul className="divide-y divide-line">
+                {(deletions as any[]).map((d) => (
+                  <li key={d.id} className="flex flex-col gap-2 py-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <b>{d.full_name ?? d.email}</b>
+                      <span className="text-sm text-muted">{d.email} · {waktu(d.created_at)}</span>
+                    </div>
+                    {d.reason && <p className="text-sm text-muted">“{d.reason}”</p>}
+                    <form action={reviewDeletion} className="flex flex-wrap gap-2">
+                      <input type="hidden" name="id" value={d.id} />
+                      <Input name="note" placeholder="Alasan bila ditolak" aria-label="Catatan" className="min-w-0 flex-1" />
+                      <Button name="decision" value="done">Sudah dihapus</Button>
+                      <Button name="decision" value="reject" variant="secondary">Tolak</Button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
           <Card title="Sekolah terbaru" actions={<Link href="/platform/sekolah" className="text-sm font-semibold text-brand">Semua</Link>}>
             <Table head={["Sekolah", "Paket", "Murid", "Pembayaran", "Terdaftar"]} empty="Belum ada sekolah.">
               {newest.map((s) => (
