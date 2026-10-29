@@ -6,6 +6,7 @@ import '../../core/data.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import '../shared/canteen_section.dart';
 import '../shared/report_screens.dart';
 
 class StudentHome extends StatelessWidget {
@@ -76,6 +77,7 @@ class StudentHome extends StatelessWidget {
                 ]),
               ),
             ReportsSection(studentId: me.id, studentName: me.fullName),
+            CanteenSection(studentId: me.id),
             Section(
               title: 'Tugas mendatang',
               child: (d['assignments'] as List).isEmpty

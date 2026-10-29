@@ -10,6 +10,7 @@ const roleLabel = <String, String>{
   'teacher': 'Guru',
   'counselor': 'Guru BK',
   'finance': 'Tata Usaha',
+  'canteen': 'Petugas Kantin',
   'student': 'Murid',
   'guardian': 'Orang Tua',
 };

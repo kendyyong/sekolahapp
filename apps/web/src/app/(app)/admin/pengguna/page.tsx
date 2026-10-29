@@ -3,7 +3,7 @@ import { invokeFunction, optStr, run, str } from "@/lib/actions";
 import { Badge, Card, Field, Flash, Input, PageHeader, Select, Table, Tabs } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
 
-const ASSIGNABLE: Role[] = ["teacher", "guardian", "student", "finance", "counselor", "principal", "school_admin"];
+const ASSIGNABLE: Role[] = ["teacher", "guardian", "student", "finance", "counselor", "canteen", "principal", "school_admin"];
 
 async function createAccount(fd: FormData) {
   "use server";
