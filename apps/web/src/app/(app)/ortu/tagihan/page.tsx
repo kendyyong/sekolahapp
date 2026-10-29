@@ -45,11 +45,12 @@ export default async function GuardianInvoices({ searchParams }: { searchParams:
   const { data: invoices } = await supabase.from("invoices").select("id, number, title, period, due_on, total, paid_amount, status")
     .eq("student_id", child.id).neq("status", "void").order("due_on", { ascending: false }).limit(60);
   const sel = (invoices ?? []).find((i) => i.id === sp.id) ?? (invoices ?? []).find((i) => i.status !== "paid");
-  const [{ data: items }, { data: pays }] = sel ? await Promise.all([
+  const [{ data: items }, { data: pays }, { data: online }] = sel ? await Promise.all([
     supabase.from("invoice_items").select("id, description, amount, discount").eq("invoice_id", sel.id),
     supabase.from("payments").select("id, amount, service_fee, method, status, receipt_number, paid_at, created_at, checkout_url, expires_at")
       .eq("invoice_id", sel.id).order("created_at", { ascending: false }),
-  ]) : [{ data: [] }, { data: [] }];
+    supabase.rpc("online_payment_enabled", { p_school: schoolId }),
+  ]) : [{ data: [] }, { data: [] }, { data: false }];
   const owed = (invoices ?? []).filter((i) => i.status !== "paid").reduce((n, i) => n + Number(i.total) - Number(i.paid_amount), 0);
   const base = `/ortu/tagihan?anak=${child.id}`;
 
@@ -84,7 +85,10 @@ export default async function GuardianInvoices({ searchParams }: { searchParams:
               ))}
               <li className="flex justify-between gap-2 border-t border-line pt-1.5 font-bold"><span>Sisa dibayar</span><span className="tabular-nums">{rupiah(Number(sel.total) - Number(sel.paid_amount))}</span></li>
             </ul>
-            {sel.status !== "paid" && (
+            {sel.status !== "paid" && !online && (
+              <p className="border-t border-line pt-3 text-sm text-muted">Silakan bayar tunai atau transfer melalui loket Tata Usaha sekolah. Pembayaran online akan tersedia setelah sekolah mengaktifkannya.</p>
+            )}
+            {sel.status !== "paid" && online && (
               <form action={payOnline} className="flex flex-col gap-3 border-t border-line pt-3">
                 <input type="hidden" name="invoice_id" value={sel.id} /><input type="hidden" name="student_id" value={child.id} />
                 <Field label="Bayar online lewat" hint="Biaya layanan (bila ada) ditampilkan sebelum Anda membayar.">

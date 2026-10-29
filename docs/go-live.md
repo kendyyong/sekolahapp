@@ -202,14 +202,32 @@ flutter build appbundle --release \
 # hasil: build/app/outputs/bundle/release/app-release.aab
 ```
 
+**AAB rilis lewat GitHub Actions (tanpa memasang Flutter di komputer).**
+1. Ubah keystore menjadi teks base64: di Windows PowerShell
+   `[Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\path\sekolahapp-upload.jks")) | Set-Clipboard`,
+   di Mac/Linux `base64 -w0 sekolahapp-upload.jks`.
+2. GitHub → Settings → Secrets and variables → Actions → **Secrets**, isi empat rahasia:
+   `ANDROID_KEYSTORE_BASE64` (teks tadi), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` (mis. `upload`), `ANDROID_KEY_PASSWORD`.
+3. Pastikan **Variables** `SUPABASE_URL` dan `SUPABASE_ANON_KEY` berisi proyek produksi.
+4. Tab **Actions → Rilis Android (Play Store) → Run workflow**, isi versi (mis. `1.0.0`).
+   Nomor build (`versionCode`) otomatis naik setiap kali dijalankan.
+5. Unduh artefak `sekolahapp-<versi>-<nomor>-aab` dari halaman run, lalu unggah `app-release.aab` ke Play Console.
+
+Aktifkan **Play App Signing** saat unggahan pertama (bawaan Play Console). Kunci di atas menjadi *upload key*;
+bila hilang, kunci bisa diganti lewat dukungan Google tanpa kehilangan aplikasi.
+
 **APK uji tanpa build sendiri.**
 1. Isi variabel repo `SUPABASE_URL` dan `SUPABASE_ANON_KEY` di GitHub (Settings → Secrets and variables → Actions → Variables).
 2. Setiap kali CI jalan, job *APK Android* menghasilkan artefak `sekolahapp-apk`. Unduh dari halaman run di tab Actions.
 3. APK itu ditandatangani kunci debug, jadi hanya untuk uji di HP, bukan untuk Play Store.
 
 **Play Console:**
-- **App content → Privacy policy:** `https://sekolahapp.id/privasi`
-- **App content → Data deletion:** `https://sekolahapp.id/hapus-akun`. Penghapusan juga tersedia di aplikasi, lewat Profil → Hapus akun.
+- **App content → Privacy policy:** `https://sekolahapp.wahanamediaberkat.com/privasi`
+- **App content → Data deletion:** `https://sekolahapp.wahanamediaberkat.com/hapus-akun`. Penghapusan juga tersedia di aplikasi, lewat Profil → Hapus akun.
+- **App content → App access:** semua fitur butuh login. Buat satu sekolah uji di produksi beserta akun orang tua, guru, dan murid
+  (jangan memakai `seed.sql`), lalu tulis email dan kata sandinya di sini untuk peninjau Google.
+- **Pembayaran online.** Selama akun Xendit/Duitku sekolah belum berstatus `live`, bagian *Bayar online* tidak tampil;
+  orang tua hanya melihat petunjuk bayar di loket TU. Tidak perlu mengisi apa pun soal pembayaran di Play Console sampai fitur ini aktif.
 - **Data safety.** Data yang dikumpulkan:
   - nama, email, dan nomor telepon
   - lokasi presisi (absen, opsional)

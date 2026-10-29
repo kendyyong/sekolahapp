@@ -1,0 +1,97 @@
+# Membuat berkas AAB bertanda tangan rilis untuk diunggah ke Google Play Console.
+# Jalankan manual: Actions → "Rilis Android (Play Store)" → Run workflow.
+#
+# Yang perlu disiapkan sekali di Settings → Secrets and variables → Actions:
+#   Secrets   ANDROID_KEYSTORE_BASE64   isi berkas upload-keystore.jks dalam base64
+#             ANDROID_KEYSTORE_PASSWORD kata sandi keystore
+#             ANDROID_KEY_ALIAS         alias kunci (mis. upload)
+#             ANDROID_KEY_PASSWORD      kata sandi kunci
+#   Variables SUPABASE_URL, SUPABASE_ANON_KEY (proyek produksi; kunci anon memang publik)
+name: Rilis Android (Play Store)
+
+on:
+  workflow_dispatch:
+    inputs:
+      versi:
+        description: Nomor versi yang terlihat pengguna (mis. 1.0.0)
+        required: true
+        default: 1.0.0
+
+permissions:
+  contents: read
+
+jobs:
+  aab:
+    name: AAB rilis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v4
+      - name: Periksa rahasia & variabel
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+        run: |
+          missing=""
+          for v in KEYSTORE STORE_PASSWORD KEY_ALIAS KEY_PASSWORD SUPABASE_URL SUPABASE_ANON_KEY; do
+            [ -n "${!v}" ] || missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Belum diisi:$missing. Lihat docs/go-live.md bagian Play Store."
+            exit 1
+          fi
+          case "$SUPABASE_URL" in https://*) ;; *) echo "::error::SUPABASE_URL harus alamat https proyek produksi"; exit 1 ;; esac
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.8
+          channel: stable
+          cache: true
+      - name: Pasang kunci rilis
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
+          {
+            echo "storeFile=upload-keystore.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+      - run: flutter pub get
+      # versionCode wajib naik di setiap unggahan; nomor run workflow selalu bertambah.
+      - env:
+          VERSI: ${{ inputs.versi }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+        run: |
+          [[ "$VERSI" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Versi harus berbentuk 1.2.3"; exit 1; }
+          flutter build appbundle --release \
+            --build-name="$VERSI" \
+            --build-number="${{ github.run_number }}" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+      - name: Pastikan AAB ditandatangani kunci rilis
+        run: |
+          jarsigner -verify -verbose -certs build/app/outputs/bundle/release/app-release.aab | grep -q "CN=Android Debug" \
+            && { echo "::error::AAB masih memakai kunci debug"; exit 1; } || true
+          jarsigner -verify build/app/outputs/bundle/release/app-release.aab
+      - run: rm -f android/key.properties android/app/upload-keystore.jks
+        if: always()
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sekolahapp-${{ inputs.versi }}-${{ github.run_number }}-aab
+          path: apps/mobile/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
