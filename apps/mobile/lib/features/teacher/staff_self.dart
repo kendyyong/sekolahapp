@@ -5,6 +5,7 @@ import '../../core/data.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import '../shared/payslip_section.dart';
 import '../student/student_checkin.dart' show currentPosition;
 
 const _leaveKind = {'tahunan': 'Cuti tahunan', 'sakit': 'Sakit', 'melahirkan': 'Melahirkan', 'alasan_penting': 'Alasan penting', 'dinas': 'Dinas luar'};
@@ -131,6 +132,7 @@ class _StaffSelfState extends State<StaffSelf> {
                   ),
               ]),
             ),
+            const PayslipSection(),
           ]);
         },
       );

@@ -7,6 +7,7 @@ import { fetchAll, monthDays, monthLabel, xlsxResponse, xlsxWorkbook } from "@/l
 import { FEE_LABEL, PPDB_STATUS, RELATIONS, type AdmissionStatus } from "@/lib/ppdb";
 import { PROMOTION_LABEL } from "@/lib/report";
 import { ENTRY_LABEL, entryDetail, itemsText, type Entry } from "@/lib/canteen";
+import { STAFF_SHORT, periodLabel, type Slip } from "@/lib/payroll";
 import { FRAMEWORK_SHORT, LEVEL_LABEL, projectNarrative, type Framework, type Level } from "@/lib/kokurikuler";
 
 // Unduhan Excel untuk laporan yang sering diminta dinas, yayasan, dan rapat sekolah.
@@ -385,6 +386,60 @@ async function canteen(req: NextRequest) {
   });
 }
 
+/** Rekap gaji satu bulan (kolom per komponen) dan daftar transfer bank. */
+async function payroll(req: NextRequest) {
+  const { supabase, active } = await requireModule("payroll", "finance", "school_admin", "principal");
+  const runId = req.nextUrl.searchParams.get("run") ?? "";
+  const [{ data: r }, { data }, { data: comps }] = await Promise.all([
+    supabase.from("payroll_runs").select("period, status").eq("id", runId).eq("school_id", active.school_id).maybeSingle(),
+    supabase.from("payslips").select("*, payroll_employees(nip, bank_name, bank_account, account_holder)").eq("run_id", runId).order("full_name"),
+    supabase.from("payroll_components").select("name").eq("school_id", active.school_id).order("position").order("name"),
+  ]);
+  if (!r) return new Response("Penggajian tidak ditemukan", { status: 404 });
+  const slips = (data ?? []) as (Slip & { payroll_employees: { nip: string | null; bank_name: string | null; bank_account: string | null; account_holder: string | null } | null })[];
+  const month = periodLabel(r.period);
+  const status = r.status === "paid" ? "sudah dibayar" : r.status === "approved" ? "disetujui, belum dibayar" : "DRAF";
+  // Kolom komponen: gaji pokok, lalu urutan komponen sekolah; komponen yang sudah dihapus di akhir.
+  const order = ["Gaji pokok", ...(comps ?? []).map((c) => c.name)];
+  const rank = (n: string) => (order.indexOf(n) + 1 || order.length + 1);
+  const cols = (kind: "earning" | "deduction") => [...new Set(slips.flatMap((s) => s.lines.filter((l) => l.kind === kind).map((l) => l.name)))]
+    .sort((a, b) => rank(a) - rank(b));
+  const earn = cols("earning"), ded = cols("deduction");
+  const amount = (s: Slip, name: string) => Number(s.lines.find((l) => l.name === name)?.amount ?? 0) || "";
+  const adj = (s: Slip, sign: 1 | -1) => s.adjustments.filter((a) => Math.sign(a.amount) === sign).reduce((n, a) => n + Math.abs(a.amount), 0) || "";
+  const total = (pick: (s: Slip) => number) => slips.reduce((n, s) => n + pick(s), 0);
+  return xlsxWorkbook(`gaji-${r.period.slice(0, 7)}.xlsx`, [
+    {
+      sheet: "Rekap gaji",
+      title: [active.school_name, `Rekap gaji ${month} · ${status}`],
+      head: ["No", "Nama", "Jabatan", "Status", "NIP/NUPTK", "Hadir", "Terlambat", "Alpa", "JP", ...earn, "Penyesuaian +", ...ded, "Penyesuaian −",
+        "Total pendapatan", "Total potongan", "Gaji bersih"],
+      rows: [
+        ...slips.map((s, i) => [
+          i + 1, s.full_name, s.position ?? "", STAFF_SHORT[s.status] ?? s.status, s.payroll_employees?.nip ?? "",
+          s.attendance.hadir + s.attendance.terlambat + s.attendance.dinas, s.attendance.terlambat, s.attendance.alpa, s.attendance.jp || "",
+          ...earn.map((n) => amount(s, n)), adj(s, 1), ...ded.map((n) => amount(s, n)), adj(s, -1),
+          Number(s.gross), Number(s.deductions), Number(s.net),
+        ]),
+        ["", "Jumlah", "", "", "", "", "", "", "", ...earn.map(() => ""), "", ...ded.map(() => ""), "",
+          total((s) => Number(s.gross)), total((s) => Number(s.deductions)), total((s) => Number(s.net))]
+          .map((v) => ({ value: v, fontWeight: "bold" as const })),
+      ],
+      widths: [5, 26, 20, 9, 16, 7, 9, 6, 6, ...earn.map(() => 14), 13, ...ded.map(() => 14), 13, 15, 15, 15],
+    },
+    {
+      sheet: "Daftar transfer",
+      title: [active.school_name, `Daftar transfer gaji ${month}`],
+      head: ["No", "Nama", "Bank", "No. rekening", "Atas nama", "Nominal", "Keterangan"],
+      rows: slips.filter((s) => Number(s.net) > 0).map((s, i) => [
+        i + 1, s.full_name, s.payroll_employees?.bank_name ?? "", s.payroll_employees?.bank_account ?? "BELUM ADA REKENING",
+        s.payroll_employees?.account_holder ?? s.full_name, Number(s.net), `Gaji ${month}`,
+      ]),
+      widths: [5, 26, 10, 20, 26, 14, 20],
+    },
+  ]);
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ laporan: string }> }) {
   const { laporan } = await params;
   switch (laporan) {
@@ -394,6 +449,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ lapo
     case "leger": return ledger(req);
     case "erapor": return eRapor(req);
     case "kantin": return canteen(req);
+    case "gaji": return payroll(req);
     case "ppdb": return admissions(req);
     case "ujian": return examResults(req);
     case "murid": {
