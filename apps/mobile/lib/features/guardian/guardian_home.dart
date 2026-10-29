@@ -4,6 +4,7 @@ import '../../core/data.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import '../shared/report_screens.dart';
 import 'children.dart';
 
 String _hhmm(String iso) => waktu(iso).split(', ').last;
@@ -98,6 +99,7 @@ class GuardianHome extends StatelessWidget {
                     ? const EmptyState('Tidak ada tugas dalam sepekan ini.')
                     : Column(children: [for (final t in d['tasks'] as List) _TaskTile(t)]),
               ),
+              ReportsSection(studentId: c.id, studentName: c.fullName),
               Section(
                 title: 'Nilai terbaru',
                 child: (d['grades'] as List).isEmpty
