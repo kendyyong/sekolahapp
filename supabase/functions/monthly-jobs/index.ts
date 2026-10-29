@@ -1,7 +1,8 @@
 // Pekerjaan terjadwal harian (dipanggil pg_cron / Supabase Scheduled Function):
 //  - tanggal 1: buat tagihan bulanan untuk semua sekolah berbayar
 //  - tanggal 1: hitung tagihan langganan platform bulan lalu
-//  - setiap hari: terapkan denda keterlambatan, kirim pengingat jatuh tempo (H-3, H, H+7)
+//  - setiap hari: batalkan permintaan isi saldo kantin yang tidak dibayar, terapkan denda
+//    keterlambatan, kirim pengingat jatuh tempo (H-3, H, H+7)
 //
 // POST /functions/v1/monthly-jobs   header: x-cron-secret: <CRON_SECRET>
 // Body opsional: { "date": "2026-11-01" } untuk menjalankan ulang tanggal tertentu.
@@ -43,6 +44,9 @@ serve(async (req) => {
         const { data: bill } = await admin.rpc("compute_platform_bill", { p_school: s.id, p_period: lastMonth });
         r.platform_bill_due = bill?.amount_due;
       }
+      // Permintaan isi saldo kantin yang tidak dibayar sampai lewat hari dibatalkan (tanpa denda/pengingat).
+      const { data: expired } = await admin.rpc("canteen_expire_topups", { p_school: s.id });
+      r.canteen_topups_expired = expired;
       const { data: late } = await admin.rpc("apply_late_fees", { p_school: s.id });
       r.late_fees = late;
 
@@ -51,7 +55,7 @@ serve(async (req) => {
         const due = addDays(today, offset);
         const { data: invs } = await admin.from("invoices")
           .select("id, title, total, paid_amount, student_id, guardian_links:students!inner(guardian_links(guardian_id))")
-          .eq("school_id", s.id).eq("due_on", due).in("status", ["unpaid", "partial"]);
+          .eq("school_id", s.id).eq("due_on", due).eq("canteen_topup", false).in("status", ["unpaid", "partial"]);
         const rows = (invs ?? []).flatMap((i) =>
           // deno-lint-ignore no-explicit-any
           ((i as any).guardian_links?.guardian_links ?? []).map((g: { guardian_id: string }) => ({

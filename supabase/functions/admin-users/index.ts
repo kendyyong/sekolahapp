@@ -13,7 +13,7 @@
 // }
 import { adminClient, HttpError, json, requireUser, serve } from "../_shared/supabase.ts";
 
-const ROLES = ["school_admin", "principal", "teacher", "counselor", "finance", "student", "guardian"] as const;
+const ROLES = ["school_admin", "principal", "teacher", "counselor", "finance", "canteen", "student", "guardian"] as const;
 type Role = typeof ROLES[number];
 
 interface Body {

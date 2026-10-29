@@ -8,6 +8,7 @@ insert into auth.users (instance_id, id, aud, role, email, encrypted_password, e
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000a3', 'authenticated', 'authenticated', 'sari@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Sari Wulandari, S.Pd"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000a4', 'authenticated', 'authenticated', 'budi@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Budi Santoso, S.Si"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000a5', 'authenticated', 'authenticated', 'tu@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Lestari (Tata Usaha)"}', now(), now(), '', '', '', ''),
+  ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000a7', 'authenticated', 'authenticated', 'kantin@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Bu Rini (Kantin)"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000a6', 'authenticated', 'authenticated', 'bk@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Yuni Kartika, S.Psi"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000b1', 'authenticated', 'authenticated', 'andi@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Andi Pratama"}', now(), now(), '', '', '', ''),
   ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-0000000000b2', 'authenticated', 'authenticated', 'bela@demo.sekolahapp.id', extensions.crypt('sekolah123', extensions.gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}', '{"full_name":"Bela Anjani"}', now(), now(), '', '', '', ''),
@@ -36,6 +37,7 @@ insert into public.memberships (school_id, user_id, role) values
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a3', 'guardian'),   -- guru sekaligus orang tua Bela
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a4', 'teacher'),
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a5', 'finance'),
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a7', 'canteen'),
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a6', 'counselor'),
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000b1', 'student'),
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000b2', 'student'),
@@ -136,3 +138,15 @@ insert into public.assessment_scores (assessment_id, student_id, school_id, scor
   ('00000000-0000-0000-0000-0000000a5003', '00000000-0000-0000-0000-000000005001', '00000000-0000-0000-0000-00000000aaaa', 74),
   ('00000000-0000-0000-0000-0000000a5003', '00000000-0000-0000-0000-000000005002', '00000000-0000-0000-0000-00000000aaaa', 86),
   ('00000000-0000-0000-0000-0000000a5003', '00000000-0000-0000-0000-000000005003', '00000000-0000-0000-0000-00000000aaaa', 79);
+
+-- Kantin digital: satu kios dengan menu, saldo awal beberapa murid.
+insert into public.canteen_stalls (id, school_id, name, operator_ids, commission_pct) values
+  ('00000000-0000-0000-0000-0000000ca001', '00000000-0000-0000-0000-00000000aaaa', 'Kantin Bu Rini', '{00000000-0000-0000-0000-0000000000a7}', 10);
+insert into public.canteen_items (school_id, stall_id, name, price, position) values
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000ca001', 'Nasi goreng', 8000, 1),
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000ca001', 'Mi ayam', 7000, 2),
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000ca001', 'Roti bakar', 5000, 3),
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000ca001', 'Es teh', 3000, 4),
+  ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000ca001', 'Air mineral', 3000, 5);
+select public.canteen_post('00000000-0000-0000-0000-000000005001', 'topup', 50000, null, null, 'cash', null, null, 'Saldo awal');
+select public.canteen_post('00000000-0000-0000-0000-000000005002', 'topup', 30000, null, null, 'cash', null, null, 'Saldo awal');

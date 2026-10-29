@@ -6,6 +6,7 @@ import { classRoster } from "@/lib/queries";
 import { fetchAll, monthDays, monthLabel, xlsxResponse, xlsxWorkbook } from "@/lib/xlsx";
 import { FEE_LABEL, PPDB_STATUS, RELATIONS, type AdmissionStatus } from "@/lib/ppdb";
 import { PROMOTION_LABEL } from "@/lib/report";
+import { ENTRY_LABEL, entryDetail, itemsText, type Entry } from "@/lib/canteen";
 import { FRAMEWORK_SHORT, LEVEL_LABEL, projectNarrative, type Framework, type Level } from "@/lib/kokurikuler";
 
 // Unduhan Excel untuk laporan yang sering diminta dinas, yayasan, dan rapat sekolah.
@@ -340,6 +341,50 @@ async function eRapor(req: NextRequest) {
   ]);
 }
 
+/** Transaksi kantin: per kios (kasir/TU) atau seluruh sekolah (TU, admin, kepsek). */
+async function canteen(req: NextRequest) {
+  const { supabase, active } = await requireModule("canteen", "canteen", "finance", "school_admin", "principal");
+  const sp = req.nextUrl.searchParams;
+  const today = todayJakarta();
+  const isDate = (d: string | null) => !!d && /^\d{4}-\d{2}-\d{2}$/.test(d);
+  const from = isDate(sp.get("dari")) ? sp.get("dari")! : today.slice(0, 8) + "01";
+  const to = isDate(sp.get("sampai")) ? sp.get("sampai")! : today;
+  const stallId = sp.get("kios");
+  const title = (what: string) => [active.school_name, `${what} · ${tanggal(from)} – ${tanggal(to)}`];
+
+  if (stallId) {
+    const [{ data: stall }, { data, error }] = await Promise.all([
+      supabase.from("canteen_stalls").select("name").eq("id", stallId).maybeSingle(),
+      supabase.rpc("canteen_stall_entries", { p_stall: stallId, p_from: from, p_to: to }),
+    ]);
+    if (!stall || error) return new Response("Kios tidak ditemukan", { status: 404 });
+    const rows = ((data ?? []) as { kind: Entry; amount: number; items: { name: string; price: number; qty: number }[] | null; created_at: string;
+      student_name: string; class_name: string | null; refunded: boolean; settlement_id: string | null }[]).reverse();
+    return xlsxResponse({
+      filename: `kantin-${stall.name}-${from}-${to}.xlsx`, sheet: stall.name,
+      title: title(`Penjualan ${stall.name}`),
+      head: ["Waktu", "Murid", "Kelas", "Transaksi", "Belanja", "Nominal", "Status"],
+      rows: rows.map((r) => [waktu(r.created_at), r.student_name, r.class_name ?? "", ENTRY_LABEL[r.kind], itemsText(r.items), -Number(r.amount),
+        r.refunded ? "Dibatalkan" : r.settlement_id ? "Sudah disetor" : "Belum disetor"]),
+      widths: [18, 26, 10, 12, 40, 12, 14],
+    });
+  }
+  if (active.role === "canteen") return new Response("Pilih kios", { status: 400 });
+  const rows = await fetchAll<any>((a, b) => supabase.from("canteen_ledger")
+    .select("kind, amount, balance_after, created_at, note, method, items, canteen_stalls(name), students(full_name, nis)")
+    .eq("school_id", active.school_id).gte("created_at", new Date(from + "T00:00:00+07:00").toISOString())
+    .lt("created_at", new Date(new Date(to + "T00:00:00+07:00").getTime() + 864e5).toISOString())
+    .order("created_at").range(a, b));
+  return xlsxResponse({
+    filename: `kantin-${from}-${to}.xlsx`, sheet: "Transaksi kantin",
+    title: title("Transaksi kantin digital"),
+    head: ["Waktu", "NIS", "Murid", "Transaksi", "Keterangan", "Masuk", "Keluar", "Saldo"],
+    rows: rows.map((r) => [waktu(r.created_at), r.students?.nis ?? "", r.students?.full_name ?? "", ENTRY_LABEL[r.kind as Entry], entryDetail(r),
+      Number(r.amount) > 0 ? Number(r.amount) : "", Number(r.amount) < 0 ? -Number(r.amount) : "", Number(r.balance_after)]),
+    widths: [18, 12, 26, 12, 40, 12, 12, 12],
+  });
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ laporan: string }> }) {
   const { laporan } = await params;
   switch (laporan) {
@@ -348,6 +393,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ lapo
     case "tunggakan": return arrears();
     case "leger": return ledger(req);
     case "erapor": return eRapor(req);
+    case "kantin": return canteen(req);
     case "ppdb": return admissions(req);
     case "ujian": return examResults(req);
     case "murid": {

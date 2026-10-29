@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type Role = "school_admin" | "principal" | "teacher" | "counselor" | "finance" | "student" | "guardian";
+export type Role = "school_admin" | "principal" | "teacher" | "counselor" | "finance" | "canteen" | "student" | "guardian";
 
 export const ROLE_LABEL: Record<Role, string> = {
   school_admin: "Admin Sekolah",
@@ -12,6 +12,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   teacher: "Guru",
   counselor: "Guru BK",
   finance: "Tata Usaha",
+  canteen: "Petugas Kantin",
   student: "Murid",
   guardian: "Orang Tua",
 };
@@ -22,6 +23,7 @@ export const ROLE_HOME: Record<Role, string> = {
   teacher: "/guru",
   counselor: "/bk",
   finance: "/tu",
+  canteen: "/kantin",
   student: "/murid",
   guardian: "/ortu",
 };
@@ -29,7 +31,7 @@ export const ROLE_HOME: Record<Role, string> = {
 export interface RoleOption { school_id: string; school_name: string; role: Role }
 
 /** Modul paket langganan (lihat tabel plans di database). */
-export type Module = "core" | "staff" | "finance" | "grades" | "counseling" | "dashboard" | "foundation" | "whitelabel" | "ppdb" | "cbt" | "whatsapp";
+export type Module = "core" | "staff" | "finance" | "grades" | "counseling" | "dashboard" | "foundation" | "whitelabel" | "ppdb" | "cbt" | "whatsapp" | "canteen";
 
 export const MODULE_LABEL: Record<Module, string> = {
   core: "Absensi, tugas, izin, pengumuman, pesan",
@@ -43,6 +45,7 @@ export const MODULE_LABEL: Record<Module, string> = {
   ppdb: "PPDB online (penerimaan murid baru)",
   cbt: "Ujian online (CBT)",
   whatsapp: "Notifikasi WhatsApp",
+  canteen: "Kantin digital (jajan pakai kartu pelajar)",
 };
 
 export interface AdminScopes { platform: boolean; foundations: { id: string; name: string }[] }
