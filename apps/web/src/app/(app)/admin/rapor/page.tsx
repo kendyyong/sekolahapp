@@ -104,6 +104,8 @@ export default async function ReportAdmin({ searchParams }: { searchParams: Prom
                       <td className="text-right whitespace-nowrap">
                         <Link href={`/rapor?kelas=${r.class_id}&semester=${term.id}`} className="text-sm font-semibold text-brand">Lihat rapor</Link>
                         <a href={`/unduh/leger?kelas=${r.class_id}&semester=${term.id}`} download className="ml-3 text-sm font-semibold text-brand">Leger</a>
+                        <a href={`/unduh/erapor?kelas=${r.class_id}&semester=${term.id}`} download className="ml-3 text-sm font-semibold text-brand"
+                          title="Nilai, deskripsi, kokurikuler, dan kehadiran untuk aplikasi e-Rapor">Data e-Rapor</a>
                       </td>
                     </tr>
                   );

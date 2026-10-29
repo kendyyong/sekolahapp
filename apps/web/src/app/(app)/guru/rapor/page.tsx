@@ -53,6 +53,7 @@ export default async function HomeroomReports({ searchParams }: {
       <PageHeader title="Rapor Kelas" subtitle={`${cls.name} · ${termLabel(term)}`} actions={
         <div className="flex flex-wrap gap-2">
           <DownloadLink href={`/unduh/leger?kelas=${cls.id}&${q}`}>Leger nilai (Excel)</DownloadLink>
+          <DownloadLink href={`/unduh/erapor?kelas=${cls.id}&${q}`}>Data e-Rapor (Excel)</DownloadLink>
           <LinkButton href={`/rapor?kelas=${cls.id}&${q}`}>Lihat & cetak semua</LinkButton>
         </div>
       } />
