@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../app.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
@@ -62,7 +63,9 @@ class _InvoiceDetailState extends State<InvoiceDetail> {
       sb.from('payments').select('id, amount, method, status, receipt_number, paid_at, created_at, checkout_url, expires_at')
           .eq('invoice_id', widget.invoiceId).order('created_at', ascending: false),
     ]);
-    return {'inv': r[0].first, 'items': r[1], 'pays': r[2]};
+    // Bagian "Bayar online" hanya tampil bila sekolah sudah mengaktifkan pembayaran online.
+    final online = await sb.rpc('online_payment_enabled', params: {'p_school': session.schoolId});
+    return {'inv': r[0].first, 'items': r[1], 'pays': r[2], 'online': online == true};
   }
 
   Future<void> _pay() async {
@@ -119,7 +122,13 @@ class _InvoiceDetailState extends State<InvoiceDetail> {
                   ),
                 ]),
               ),
-              if (inv['status'] != 'paid')
+              if (inv['status'] != 'paid' && d['online'] != true)
+                const Section(
+                  title: 'Cara bayar',
+                  child: Text('Silakan bayar tunai atau transfer melalui loket Tata Usaha sekolah. '
+                      'Pembayaran online akan tersedia setelah sekolah mengaktifkannya.', style: TextStyle(color: Palette.muted)),
+                ),
+              if (inv['status'] != 'paid' && d['online'] == true)
                 Section(
                   title: 'Bayar online',
                   child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

@@ -20,7 +20,7 @@ async function topup(fd: FormData) {
   const amount = Number(str(fd, "custom") || num(fd, "amount"));
   const { data, error } = await supabase.rpc("canteen_request_topup", { p_student: student, p_amount: amount });
   if (error) redirect(`${back(fd)}&err=${encodeURIComponent(error.message)}`);
-  redirect(`/ortu/tagihan?anak=${student}&id=${data}&ok=${encodeURIComponent("Pilih cara bayar. Saldo bertambah otomatis setelah pembayaran diterima.")}`);
+  redirect(`/ortu/tagihan?anak=${student}&id=${data}&ok=${encodeURIComponent("Tagihan isi saldo dibuat. Saldo bertambah otomatis setelah pembayaran diterima.")}`);
 }
 
 async function controls(fd: FormData) {
@@ -36,9 +36,10 @@ export default async function GuardianCanteen({ searchParams }: { searchParams: 
   const children = await myChildren(supabase, user.id, schoolId);
   const child = pickChild(children, sp.anak);
   if (!child) return (<><PageHeader title="Saldo Kantin" /><Empty>Akun Anda belum ditautkan ke data murid.</Empty></>);
-  const [{ data: w }, { data: ledger }] = await Promise.all([
+  const [{ data: w }, { data: ledger }, { data: online }] = await Promise.all([
     supabase.from("canteen_wallets").select("balance, daily_limit, is_frozen").eq("student_id", child.id).maybeSingle(),
     supabase.from("canteen_ledger").select(LEDGER_COLUMNS).eq("student_id", child.id).order("created_at", { ascending: false }).limit(100),
+    supabase.rpc("online_payment_enabled", { p_school: schoolId }),
   ]);
   const rows = (ledger ?? []) as unknown as LedgerRow[];
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
@@ -80,7 +81,7 @@ export default async function GuardianCanteen({ searchParams }: { searchParams: 
                 <Input id="custom" name="custom" type="number" min={10000} max={1000000} step={1000} />
               </Field>
               <SubmitButton pendingLabel="Membuat tagihan…">Lanjut bayar</SubmitButton>
-              <p className="text-xs text-muted">Bayar online (VA, QRIS, e-wallet) atau di loket Tata Usaha. Saldo bertambah otomatis setelah lunas.</p>
+              <p className="text-xs text-muted">{online ? "Bayar online (VA, QRIS, e-wallet) atau di loket Tata Usaha." : "Bayar tagihannya di loket Tata Usaha."} Saldo bertambah otomatis setelah lunas.</p>
             </form>
           </Card>
           <Card title="Kartu jajan">
