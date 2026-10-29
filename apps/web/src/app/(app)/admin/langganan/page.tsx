@@ -7,7 +7,7 @@ import { PAYMENT_LABEL, PLAN_LABEL } from "../../platform/plans";
 
 const MODULE_LABEL: Record<string, string> = {
   core: "Absensi, tugas, izin, pengumuman, pesan", staff: "Absen & cuti guru, arahan", finance: "SPP & bayar online",
-  grades: "Penilaian", counseling: "BK", dashboard: "Dasbor kepala sekolah", foundation: "Dasbor yayasan", whitelabel: "Logo & nama sendiri", ppdb: "PPDB online",
+  grades: "Penilaian", counseling: "BK", dashboard: "Dasbor kepala sekolah", foundation: "Dasbor yayasan", whitelabel: "Logo & nama sendiri", ppdb: "PPDB online", cbt: "Ujian online",
 };
 
 async function requestChange(fd: FormData) {

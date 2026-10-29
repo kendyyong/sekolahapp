@@ -8,9 +8,10 @@ type Result = { error?: { message: string } | null } | void;
 
 /**
  * Menjalankan aksi server lalu kembali ke `path` dengan pesan sukses/gagal
- * (?ok=… atau ?err=…) yang ditampilkan komponen <Flash>.
+ * (?ok=… atau ?err=…) yang ditampilkan komponen <Flash>. `okMessage` boleh berupa fungsi
+ * bila pesannya bergantung pada hasil aksi.
  */
-export async function run(path: string, okMessage: string, fn: (sb: SupabaseClient) => PromiseLike<Result>, okPath?: () => string) {
+export async function run(path: string, okMessage: string | (() => string), fn: (sb: SupabaseClient) => PromiseLike<Result>, okPath?: () => string) {
   const sb = await createClient();
   let error: string | null = null;
   try {
@@ -24,7 +25,7 @@ export async function run(path: string, okMessage: string, fn: (sb: SupabaseClie
   const url = new URL(!error && okPath ? okPath() : path, "http://x");
   url.searchParams.delete("ok");
   url.searchParams.delete("err");
-  url.searchParams.set(error ? "err" : "ok", error ?? okMessage);
+  url.searchParams.set(error ? "err" : "ok", error ?? (typeof okMessage === "function" ? okMessage() : okMessage));
   redirect(url.pathname + url.search);
 }
 
