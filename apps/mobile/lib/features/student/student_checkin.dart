@@ -21,11 +21,12 @@ Future<Position?> currentPosition() async {
   }
 }
 
-const _method = {'manual': 'Dicatat guru', 'qr': 'Kode kelas', 'geo': 'Kode + lokasi', 'leave': 'Surat izin'};
+const _method = {'manual': 'Dicatat guru', 'qr': 'Kode kelas', 'geo': 'Kode + lokasi', 'leave': 'Surat izin', 'card': 'Kartu pelajar'};
 
 String _how(Map row) => [
       _method[row['method']] ?? row['method'],
       if (row['checked_in_at'] != null) waktu(row['checked_in_at']),
+      if (row['checked_out_at'] != null) 'pulang ${waktu(row['checked_out_at']).split(', ').last}',
     ].join(' · ');
 
 class StudentCheckIn extends StatefulWidget {
@@ -43,9 +44,10 @@ class _StudentCheckInState extends State<StudentCheckIn> {
     final me = await myStudent(session.userId, session.schoolId);
     final history = me == null
         ? <Map<String, dynamic>>[]
-        : await sb.from('student_attendance').select('date, status, method, checked_in_at')
+        : await sb.from('student_attendance').select('date, status, method, checked_in_at, checked_out_at')
             .eq('student_id', me.id).isFilter('teaching_assignment_id', null).order('date', ascending: false).limit(30);
-    return {'me': me, 'history': history};
+    final mode = await sb.rpc('student_app_mode', params: {'p_school': session.schoolId});
+    return {'me': me, 'history': history, 'selfCheckIn': (mode ?? 'full') == 'full'};
   }
 
   Future<void> _checkIn(StudentRef me, String code) async {
@@ -82,7 +84,10 @@ class _StudentCheckInState extends State<StudentCheckIn> {
             Section(
               title: 'Absen hari ini',
               child: today != null
-                  ? Row(children: [StatusPill(today['status']), const SizedBox(width: 8), Text(_how(today), style: const TextStyle(color: Palette.muted))])
+                  ? Row(children: [StatusPill(today['status']), const SizedBox(width: 8), Expanded(child: Text(_how(today), style: const TextStyle(color: Palette.muted)))])
+                  : d['selfCheckIn'] != true
+                  ? const Text('Sekolahmu memakai absen lewat kartu pelajar. Tempelkan kartu di kios absen saat tiba, atau lapor ke guru piket.',
+                      style: TextStyle(color: Palette.muted))
                   : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                       FilledButton.icon(onPressed: _busy ? null : () => _scan(me), icon: const Icon(Icons.qr_code_scanner), label: const Text('Pindai QR kelas')),
                       const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('atau ketik kode dari guru', textAlign: TextAlign.center, style: TextStyle(color: Palette.muted))),

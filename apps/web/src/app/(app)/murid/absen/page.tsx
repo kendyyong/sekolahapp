@@ -24,8 +24,12 @@ export default async function StudentCheckIn({ searchParams }: { searchParams: P
   const me = await myStudent(supabase, user.id, schoolId);
   if (!me) return <Empty>Data murid tidak ditemukan.</Empty>;
   const today = todayJakarta();
-  const { data: history } = await supabase.from("student_attendance").select("date, status, method, checked_in_at")
-    .eq("student_id", me.id).is("teaching_assignment_id", null).order("date", { ascending: false }).limit(30);
+  const [{ data: history }, { data: mode }] = await Promise.all([
+    supabase.from("student_attendance").select("date, status, method, checked_in_at, checked_out_at")
+      .eq("student_id", me.id).is("teaching_assignment_id", null).order("date", { ascending: false }).limit(30),
+    supabase.rpc("student_app_mode", { p_school: schoolId }),
+  ]);
+  const selfCheckIn = (mode ?? "full") === "full";
   const todayRow = history?.find((h) => h.date === today);
 
   return (
@@ -36,6 +40,8 @@ export default async function StudentCheckIn({ searchParams }: { searchParams: P
         <Card title="Absen hari ini" className="h-fit">
           {todayRow ? (
             <div className="text-sm"><StatusBadge status={todayRow.status} /><div className="mt-2 text-muted">Tercatat {waktu(todayRow.checked_in_at)}</div></div>
+          ) : !selfCheckIn ? (
+            <p className="text-sm text-muted">Sekolah Anda memakai absen lewat kartu pelajar. Tempelkan kartu di kios absen saat tiba, atau lapor ke guru piket.</p>
           ) : (
             <form action={checkIn} className="flex flex-col gap-3">
               <Field label="Kode absen kelas" hint="Kode ditampilkan guru di kelas.">
@@ -47,11 +53,11 @@ export default async function StudentCheckIn({ searchParams }: { searchParams: P
           )}
         </Card>
         <div className="min-w-0">
-          <Table head={["Tanggal", "Status", "Cara", "Jam"]} empty="Belum ada riwayat absen.">
+          <Table head={["Tanggal", "Status", "Cara", "Masuk", "Pulang"]} empty="Belum ada riwayat absen.">
             {(history ?? []).map((h) => (
               <tr key={h.date}><td>{tanggal(h.date)}</td><td><StatusBadge status={h.status} /></td>
-                <td className="text-muted">{({ manual: "Dicatat guru", qr: "Kode kelas", geo: "Kode + lokasi", leave: "Surat izin" } as Record<string, string>)[h.method]}</td>
-                <td>{waktu(h.checked_in_at)}</td></tr>
+                <td className="text-muted">{({ manual: "Dicatat guru", qr: "Kode kelas", geo: "Kode + lokasi", leave: "Surat izin", card: "Kartu pelajar" } as Record<string, string>)[h.method]}</td>
+                <td>{waktu(h.checked_in_at)}</td><td>{waktu(h.checked_out_at)}</td></tr>
             ))}
           </Table>
         </div>

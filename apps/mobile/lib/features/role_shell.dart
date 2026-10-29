@@ -76,6 +76,7 @@ class _RoleShellState extends State<RoleShell> {
   void initState() {
     super.initState();
     _countUnread();
+    _checkStudentMode();
   }
 
   Future<void> _countUnread() async {
@@ -85,9 +86,36 @@ class _RoleShellState extends State<RoleShell> {
     } catch (_) {}
   }
 
+  /// Sekolah yang mematikan aplikasi murid: murid hanya melihat pemberitahuan.
+  bool _studentAppOff = false;
+
+  Future<void> _checkStudentMode() async {
+    if (session.active!.role != 'student') return;
+    try {
+      final mode = await sb.rpc('student_app_mode', params: {'p_school': session.schoolId});
+      if (mounted && mode == 'off') setState(() => _studentAppOff = true);
+    } catch (_) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     final a = session.active!;
+    if (_studentAppOff) {
+      return Scaffold(
+        appBar: AppBar(title: Text(a.schoolName), actions: [
+          IconButton(
+            tooltip: 'Profil & ganti peran',
+            icon: const Icon(Icons.account_circle_outlined),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+          ),
+        ]),
+        body: const EmptyState(
+          'Aplikasi murid tidak dipakai di sekolahmu.\nAbsen lewat kartu pelajar dan guru, tugas dikumpulkan langsung ke guru, '
+          'dan info tugas serta nilai dikirim ke orang tuamu.',
+          icon: Icons.phonelink_off,
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

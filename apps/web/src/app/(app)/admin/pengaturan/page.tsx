@@ -1,6 +1,13 @@
+import Link from "next/link";
 import { requireRole } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { Button, Card, Field, Flash, Input, PageHeader } from "@/components/ui";
+
+const APP_MODES = [
+  { value: "full", label: "Penuh", hint: "Murid absen sendiri dengan QR kelas dan mengerjakan tugas di aplikasi." },
+  { value: "no_self_checkin", label: "Absen lewat kartu/guru", hint: "Murid tetap memakai aplikasi untuk tugas, tetapi absen hanya lewat kios kartu atau guru." },
+  { value: "off", label: "Murid tanpa aplikasi", hint: "Murid tidak memakai aplikasi. Info tugas dan nilai dikirim ke orang tua, tugas dikumpulkan ke guru." },
+];
 
 async function saveSettings(fd: FormData) {
   "use server";
@@ -22,6 +29,7 @@ async function saveSettings(fd: FormData) {
       student_leave_escalate_days: int("student_leave_escalate_days", 1, 30),
       invoice_due_day: int("invoice_due_day", 1, 28),
       late_fee_amount: int("late_fee_amount", 0, 10_000_000),
+      student_app_mode: str(fd, "student_app_mode") || "full",
       geofence: lat && lng ? { lat: Number(lat), lng: Number(lng), radius_m: int("geo_radius", 30, 5000) } : null,
     };
     return sb.from("schools").update({
@@ -62,6 +70,24 @@ export default async function SchoolSettings({ searchParams }: { searchParams: P
               <Field label="Radius (m)"><Input id="rad" name="geo_radius" type="number" defaultValue={st.geofence?.radius_m ?? 150} /></Field>
             </div>
           </div>
+        </Card>
+        <Card title="Penggunaan aplikasi oleh murid" className="lg:col-span-2">
+          <fieldset className="grid gap-3 md:grid-cols-3">
+            <legend className="sr-only">Mode aplikasi murid</legend>
+            {APP_MODES.map((m) => (
+              <label key={m.value} className="flex cursor-pointer gap-3 rounded-lg border border-line p-3 has-[:checked]:border-brand has-[:checked]:bg-brand-soft">
+                <input type="radio" name="student_app_mode" value={m.value} defaultChecked={(st.student_app_mode ?? "full") === m.value} className="mt-1" />
+                <span>
+                  <span className="block font-bold text-ink">{m.label}</span>
+                  <span className="block text-sm text-muted">{m.hint}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          <p className="mt-3 text-sm text-muted">
+            Murid tanpa ponsel tetap tercatat lewat <Link href="/admin/kartu" className="font-semibold text-brand">kartu pelajar</Link> di
+            {" "}<Link href="/kios" className="font-semibold text-brand">kios absen</Link> atau absensi oleh guru. Tugas kertas dinilai guru di menu Tugas & PR.
+          </p>
         </Card>
         <Card title="Izin & cuti">
           <div className="grid grid-cols-2 gap-3">

@@ -43,6 +43,20 @@ Akun demo (kata sandi semua `sekolah123`):
 | `andi@demo.sekolahapp.id` | Murid VII-A |
 | `ortu.andi@demo.sekolahapp.id` | Orang tua Andi |
 
+## Sekolah tanpa ponsel murid
+
+Ponsel murid bersifat opsional. Admin sekolah memilih mode di **Pengaturan Sekolah → Penggunaan aplikasi oleh murid**:
+
+| Mode | Murid | Absen | Tugas |
+| --- | --- | --- | --- |
+| Penuh (bawaan) | Memakai aplikasi | QR kelas, kartu, atau guru | Online atau kertas |
+| Absen lewat kartu/guru | Memakai aplikasi | Kartu atau guru saja | Online atau kertas |
+| Murid tanpa aplikasi | Tidak login | Kartu atau guru | Kertas; info & nilai ke orang tua |
+
+- **Kartu pelajar** dicetak dari `/admin/kartu` (A4, ukuran KTP). QR berisi token acak; kartu hilang bisa diganti dan kartu lama langsung tidak berlaku.
+- **Kios absen** di `/kios` untuk tablet gerbang atau laptop piket, memakai pemindai QR USB/Bluetooth (mode keyboard) atau kamera. Guru juga bisa memakai **Kios kartu pelajar** di aplikasi HP. Orang tua menerima notifikasi saat anak tiba dan pulang.
+- **Tugas kertas** dicatat dan dinilai guru di Tugas & PR → Catat tugas kertas, dengan foto jawaban opsional.
+
 ## Tes
 
 ```bash

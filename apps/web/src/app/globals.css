@@ -44,3 +44,10 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
 }
+
+/* Cetak (kartu pelajar, rekap): kertas putih, tanpa sidebar. */
+@media print {
+  @page { size: A4; margin: 10mm; }
+  :root { color-scheme: light; }
+  body { background: #fff; color: #000; }
+}

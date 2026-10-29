@@ -5,6 +5,7 @@ import '../../app.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import 'card_kiosk.dart';
 
 /// Murid di kelas perwalian guru ini (tahun ajaran aktif).
 Future<List<String>> homeroomStudentIds() async {
@@ -41,6 +42,11 @@ class TeacherHome extends StatelessWidget {
           return PageList(children: [
             Text('Selamat datang, ${session.firstName}', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
             Text(tanggal(todayJakarta(), withDay: true), style: const TextStyle(color: Palette.muted)),
+            OutlinedButton.icon(
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CardKioskScreen())),
+              icon: const Icon(Icons.badge_outlined),
+              label: const Text('Kios kartu pelajar (guru piket)'),
+            ),
             Row(children: [
               Expanded(child: StatTile(label: 'Izin menunggu', value: Text('${d['pendingLeave']}'), tone: (d['pendingLeave'] as int) > 0 ? Tone.warn : null)),
               const SizedBox(width: 12),
