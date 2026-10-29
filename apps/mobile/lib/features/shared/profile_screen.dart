@@ -83,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               for (final r in session.roles)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: Icon(r.key == session.active?.key ? Icons.radio_button_checked : Icons.radio_button_off, color: Palette.brand),
+                  leading: Icon(r.key == session.active?.key ? Icons.radio_button_checked : Icons.radio_button_off, color: Theme.of(context).colorScheme.primary),
                   title: Text(roleLabel[r.role] ?? r.role),
                   subtitle: Text(r.schoolName),
                   onTap: () {

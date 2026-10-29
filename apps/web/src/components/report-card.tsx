@@ -1,4 +1,5 @@
 import { PROMOTION_LABEL, type ReportView } from "@/lib/report";
+import { Letterhead } from "@/components/letterhead";
 
 const longDate = (d: string | null) =>
   d ? new Date(d + "T00:00:00+07:00").toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Jakarta" }) : "";
@@ -20,11 +21,7 @@ export function ReportCard({ r }: { r: ReportView }) {
           <span className="-rotate-30 text-8xl font-extrabold tracking-widest text-line/70 print:text-black/10">DRAF</span>
         </div>
       )}
-      <header className="border-b-2 border-ink pb-3 text-center print:border-black">
-        <div className="text-base font-extrabold tracking-wide">LAPORAN HASIL BELAJAR</div>
-        <div className="text-lg font-extrabold">{r.school.name}</div>
-        {r.school.address && <div className="text-xs text-muted print:text-black">{r.school.address}{r.school.npsn && ` · NPSN ${r.school.npsn}`}</div>}
-      </header>
+      <Letterhead school={r.school} title="LAPORAN HASIL BELAJAR" />
 
       <dl className="mt-4 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 print:grid-cols-2">
         {[
@@ -112,10 +109,12 @@ export function ReportCard({ r }: { r: ReportView }) {
           <div>{[r.term.report_place, longDate(r.term.report_date)].filter(Boolean).join(", ") || "\u00a0"}</div>
           <div>Wali kelas</div>
           <div className="mt-12 border-t border-ink pt-1 font-semibold print:border-black">{r.homeroom ?? ""}</div>
+          <div className="text-xs">{r.homeroom_nip ? `NIP. ${r.homeroom_nip}` : "\u00a0"}</div>
         </div>
         <div className="col-span-2 sm:col-span-3 print:col-span-3">
           <div>Mengetahui,<br />Kepala sekolah</div>
           <div className="mx-auto mt-12 w-56 border-t border-ink pt-1 font-semibold print:border-black">{r.principal ?? ""}</div>
+          <div className="text-xs">{r.principal_nip ? `NIP. ${r.principal_nip}` : "\u00a0"}</div>
         </div>
       </footer>
     </article>

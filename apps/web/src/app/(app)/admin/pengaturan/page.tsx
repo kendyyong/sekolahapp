@@ -32,32 +32,22 @@ async function saveSettings(fd: FormData) {
       student_app_mode: str(fd, "student_app_mode") || "full",
       geofence: lat && lng ? { lat: Number(lat), lng: Number(lng), radius_m: int("geo_radius", 30, 5000) } : null,
     };
-    return sb.from("schools").update({
-      name: str(fd, "name"), npsn: optStr(fd, "npsn"), address: optStr(fd, "address"), phone: optStr(fd, "phone"), settings,
-    }).eq("id", schoolId);
+    return sb.from("schools").update({ settings }).eq("id", schoolId);
   });
 }
 
 export default async function SchoolSettings({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const sp = await searchParams;
   const { supabase, schoolId } = await requireRole("school_admin");
-  const { data: s } = await supabase.from("schools").select("name, npsn, address, phone, settings").eq("id", schoolId).single();
+  const { data: s } = await supabase.from("schools").select("settings").eq("id", schoolId).single();
   const st = (s?.settings ?? {}) as Record<string, any>;
 
   return (
     <>
-      <PageHeader title="Pengaturan Sekolah" />
+      <PageHeader title="Pengaturan Sekolah" subtitle={<>Aturan absensi, izin, dan tagihan. Nama, logo, moto, dan kop sekolah diatur di <Link href="/admin/identitas" className="font-semibold text-brand">Identitas & Merek</Link>.</>} />
       <Flash searchParams={sp} />
       <form action={saveSettings} className="grid gap-6 lg:grid-cols-2">
-        <Card title="Identitas sekolah">
-          <div className="flex flex-col gap-3">
-            <Field label="Nama sekolah"><Input id="name" name="name" defaultValue={s?.name} required /></Field>
-            <Field label="NPSN"><Input id="npsn" name="npsn" defaultValue={s?.npsn ?? ""} /></Field>
-            <Field label="Alamat"><Input id="address" name="address" defaultValue={s?.address ?? ""} /></Field>
-            <Field label="Telepon"><Input id="phone" name="phone" defaultValue={s?.phone ?? ""} /></Field>
-          </div>
-        </Card>
-        <Card title="Absensi">
+        <Card title="Absensi" className="lg:col-span-2">
           <div className="flex flex-col gap-3">
             <div className="grid grid-cols-2 gap-3">
               <Field label="Jam masuk"><Input id="start" name="school_start_time" type="time" defaultValue={st.school_start_time ?? "07:00"} /></Field>

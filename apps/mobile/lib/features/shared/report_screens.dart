@@ -28,7 +28,7 @@ class ReportsSection extends StatelessWidget {
             for (final r in rows)
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.menu_book_outlined, color: Palette.brand),
+                leading: Icon(Icons.menu_book_outlined, color: Theme.of(context).colorScheme.primary),
                 title: Text('Semester ${r['terms']['semester']} (${r['terms']['name']}) · ${r['terms']['academic_years']?['name'] ?? ''}'),
                 subtitle: Text('Terbit ${tanggal((r['terms']['published_at'] as String?)?.substring(0, 10))}'),
                 trailing: const Icon(Icons.chevron_right),

@@ -1,3 +1,4 @@
+import type { LetterheadSchool } from "@/components/letterhead";
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { todayJakarta } from "@/lib/format";
@@ -32,12 +33,14 @@ export function termLabel(t: Pick<Term, "name" | "semester">) {
 
 /** Isi rapor dari RPC report_card_view. */
 export interface ReportView {
-  school: { name: string; npsn: string | null; address: string | null; logo_url: string | null };
+  school: LetterheadSchool & { motto: string | null };
   term: { id: string; name: string; semester: number; year: string; report_date: string | null; report_place: string | null; published_at: string | null };
   student: { id: string; full_name: string; nis: string | null; nisn: string | null };
   class: { id: string; name: string; grade_level: number };
   homeroom: string | null;
+  homeroom_nip: string | null;
   principal: string | null;
+  principal_nip: string | null;
   card: {
     status: "draft" | "final"; homeroom_note: string | null; promotion: string | null;
     extracurriculars: { name: string; grade?: string; note?: string }[];

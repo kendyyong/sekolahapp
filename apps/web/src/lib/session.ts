@@ -44,6 +44,12 @@ export const MODULE_LABEL: Record<Module, string> = {
 
 export interface AdminScopes { platform: boolean; foundations: { id: string; name: string }[] }
 
+/** Merek sekolah aktif; brand_color & app_name hanya terisi bila paketnya memuat whitelabel. */
+export interface SchoolBrand {
+  name: string; slug: string; logo_url: string | null; motto: string | null;
+  brand_color: string | null; app_name: string | null;
+}
+
 export const ACTIVE_ROLE_COOKIE = "sa_active";
 
 export const getSession = cache(async () => {
@@ -63,11 +69,16 @@ export const getSession = cache(async () => {
   const [sid, r] = raw?.split("|") ?? [];
   const active = options.find((o) => o.school_id === sid && o.role === r) ?? options[0] ?? null;
 
-  const modules = active
-    ? (((await supabase.rpc("school_modules", { p_school: active.school_id })).data ?? []) as Module[])
-    : [];
+  const [{ data: mods }, { data: brandData }] = active
+    ? await Promise.all([
+        supabase.rpc("school_modules", { p_school: active.school_id }),
+        supabase.rpc("school_brand", { p_school: active.school_id }),
+      ])
+    : [{ data: [] }, { data: null }];
+  const modules = (mods ?? []) as Module[];
+  const brand = (brandData ?? null) as SchoolBrand | null;
 
-  return { supabase, user, profile, roles: options, active, scopes, modules };
+  return { supabase, user, profile, roles: options, active, scopes, modules, brand };
 });
 
 /** Halaman pemilik platform (super admin). */

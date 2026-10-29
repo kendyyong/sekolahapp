@@ -18,7 +18,7 @@ export async function ChatThread({ sb, studentId, me, action, back }: {
           {msgs.map((m: any) => {
             const mine = m.sender_id === me;
             return (
-              <li key={m.id} className={cx("max-w-[85%] rounded-lg px-3 py-2 text-sm", mine ? "self-end bg-brand text-white" : "self-start border border-line bg-sheet")}>
+              <li key={m.id} className={cx("max-w-[85%] rounded-lg px-3 py-2 text-sm", mine ? "self-end bg-brand-solid text-white" : "self-start border border-line bg-sheet")}>
                 {!mine && <div className="mb-0.5 text-xs font-semibold text-brand">{m.profiles?.full_name}</div>}
                 <p className="whitespace-pre-line">{m.body}</p>
                 <div className={cx("mt-1 text-[11px]", mine ? "text-white/70" : "text-muted")}>{waktu(m.created_at)}</div>

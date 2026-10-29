@@ -66,6 +66,12 @@ Tersedia di paket Pro ke atas (modul `grades`). Alurnya:
 3. **Wali kelas** (`/guru/rapor`) memantau kelengkapan nilai, mengisi catatan, ekstrakurikuler, dan kenaikan kelas, lalu memfinalkan. Ketidakhadiran diambil otomatis dari absensi harian. Leger nilai bisa diunduh sebagai Excel.
 4. **Kepala sekolah/admin** menerbitkan rapor. Orang tua dan murid diberi notifikasi, melihat rapor di web (`/ortu/rapor`, `/murid/rapor`) atau aplikasi HP, dan bisa mencetak/menyimpan PDF A4 dari `/rapor`. Setelah terbit, nilai semester itu terkunci sampai terbitan dibuka kembali.
 
+## Identitas & merek sekolah
+
+Admin sekolah mengatur logo, moto, visi-misi, dan kop (alamat, telepon, email, situs) di `/admin/identitas`. Logo dan moto tampil di menu aplikasi web dan HP, kios absen, kartu pelajar, serta kop rapor; NIP kepala sekolah dan wali kelas (diisi di Profil) dicetak di bawah tanda tangan rapor.
+
+Setiap sekolah punya halaman masuk sendiri di `/masuk/<slug>` dengan logo, moto, dan warnanya. Paket Enterprise (modul `whitelabel`) juga bisa memakai **warna utama** dan **nama aplikasi** sendiri; warna harus cukup gelap untuk teks putih (kontras minimal 4,5:1) dan otomatis diterangkan di mode gelap. Bila sekolah turun paket, warna & nama tersimpan tetapi tidak dipakai.
+
 ## Tes
 
 ```bash

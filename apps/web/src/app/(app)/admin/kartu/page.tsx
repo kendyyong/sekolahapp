@@ -18,7 +18,7 @@ export default async function StudentCards({ searchParams }: {
   searchParams: Promise<{ kelas?: string; ok?: string; err?: string }>;
 }) {
   const sp = await searchParams;
-  const { supabase, schoolId } = await requireRole("school_admin");
+  const { supabase, schoolId, brand } = await requireRole("school_admin");
   const [{ data: school }, { data: classes }] = await Promise.all([
     supabase.from("schools").select("name, logo_url, address").eq("id", schoolId).single(),
     supabase.from("classes").select("id, name, academic_years!inner(is_active, name)")
@@ -64,14 +64,19 @@ export default async function StudentCards({ searchParams }: {
           {cards.map((c) => (
             <div key={c.id} className="flex flex-col gap-1 break-inside-avoid">
               <article className="flex h-[54mm] w-[85.6mm] overflow-hidden rounded-[3mm] border border-[#c9d2e3] bg-white text-[#18233d]">
-                <div className="flex w-[30mm] shrink-0 flex-col items-center justify-center gap-[1.5mm] bg-[#1f4fb8] p-[3mm]">
+                <div className="flex w-[30mm] shrink-0 flex-col items-center justify-center gap-[1.5mm] p-[3mm]"
+                  style={{ background: brand?.brand_color ?? "#1f4fb8" }}>
                   <div className="rounded-[1.5mm] bg-white p-[1.5mm] [&_svg]:h-[22mm] [&_svg]:w-[22mm]"
                     dangerouslySetInnerHTML={{ __html: c.qr }} />
                   <span className="text-center text-[2.4mm] font-bold uppercase leading-tight tracking-wide text-white">Tempel untuk absen</span>
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col p-[3.5mm]">
                   <div className="text-[2.4mm] font-bold uppercase tracking-wide text-[#c8372d]">Kartu Pelajar</div>
-                  <div className="truncate text-[3mm] font-bold leading-tight">{school?.name}</div>
+                  <div className="flex items-center gap-[1.5mm]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {school?.logo_url && <img src={school.logo_url} alt="" className="size-[6mm] shrink-0 object-contain" />}
+                    <div className="truncate text-[3mm] font-bold leading-tight">{school?.name}</div>
+                  </div>
                   <div className="mt-auto">
                     <div className="line-clamp-2 text-[4.2mm] font-extrabold leading-tight">{c.full_name}</div>
                     <dl className="mt-[1.5mm] grid grid-cols-[auto_1fr] gap-x-[2mm] text-[2.8mm] leading-snug">
