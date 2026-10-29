@@ -61,6 +61,7 @@ jobs:
         with:
           deno-version: v2.1.x
       - run: deno check */index.ts
+      - run: deno test _shared/
 
   mobile:
     name: Aplikasi HP (analyze + test)

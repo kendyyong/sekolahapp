@@ -29,6 +29,7 @@ const MODULE_LABEL: Record<string, string> = {
   whitelabel: "Nama & logo sekolah sendiri",
   ppdb: "PPDB online",
   cbt: "Ujian online (CBT)",
+  whatsapp: "Notifikasi WhatsApp",
 };
 
 const FAQ = [

@@ -27,6 +27,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/admin/identitas", label: "Identitas & Merek", icon: "building", group: "Administrasi" },
     { href: "/admin/pengguna", label: "Akun & Peran", icon: "userCog" },
     { href: "/admin/pengaturan", label: "Pengaturan Sekolah", icon: "settings" },
+    { href: "/admin/whatsapp", label: "Notifikasi WhatsApp", icon: "whatsapp", module: "whatsapp" },
     { href: "/admin/langganan", label: "Langganan & Paket", icon: "card" },
   ],
   principal: [
