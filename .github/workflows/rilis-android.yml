@@ -6,7 +6,8 @@
 #             ANDROID_KEYSTORE_PASSWORD kata sandi keystore
 #             ANDROID_KEY_ALIAS         alias kunci (mis. upload)
 #             ANDROID_KEY_PASSWORD      kata sandi kunci
-#   Variables SUPABASE_URL, SUPABASE_ANON_KEY (proyek produksi; kunci anon memang publik)
+#   Variables SUPABASE_URL, SUPABASE_ANON_KEY (proyek produksi; kunci anon memang publik).
+#             Boleh juga diisi sebagai Secrets dengan nama yang sama.
 name: Rilis Android (Play Store)
 
 on:
@@ -35,8 +36,8 @@ jobs:
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
         run: |
           missing=""
           for v in KEYSTORE STORE_PASSWORD KEY_ALIAS KEY_PASSWORD SUPABASE_URL SUPABASE_ANON_KEY; do
@@ -74,8 +75,8 @@ jobs:
       # versionCode wajib naik di setiap unggahan; nomor run workflow selalu bertambah.
       - env:
           VERSI: ${{ inputs.versi }}
-          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
         run: |
           [[ "$VERSI" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Versi harus berbentuk 1.2.3"; exit 1; }
           flutter build appbundle --release \
