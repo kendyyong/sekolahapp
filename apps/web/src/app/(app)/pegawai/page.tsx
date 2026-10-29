@@ -2,7 +2,8 @@ import { requireRole, requireModule } from "@/lib/session";
 import { optStr, run, str, uploadFile } from "@/lib/actions";
 import { tanggal, todayJakarta, waktu } from "@/lib/format";
 import { GeoFields } from "@/components/geo-fields";
-import { Button, Card, Field, Flash, Input, PageHeader, Select, Stat, StatusBadge, Table, Textarea } from "@/components/ui";
+import { Card, Field, Flash, Input, PageHeader, Select, Stat, StatusBadge, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const STAFF = ["teacher", "counselor", "finance", "school_admin"] as const;
 const LEAVE_KIND: Record<string, string> = {
@@ -70,10 +71,10 @@ export default async function StaffSelf({ searchParams }: { searchParams: Promis
           ) : <p className="text-sm text-muted">Belum absen.</p>}
           <div className="mt-4 flex flex-wrap gap-2">
             <form action={checkIn}>
-              <Button type="submit" disabled={!!todayRow?.check_in_at}>Absen masuk</Button>
+              <SubmitButton disabled={!!todayRow?.check_in_at}>Absen masuk</SubmitButton>
               <GeoFields />
             </form>
-            <form action={checkOut}><Button type="submit" variant="secondary" disabled={!todayRow?.check_in_at || !!todayRow?.check_out_at}>Absen pulang</Button></form>
+            <form action={checkOut}><SubmitButton variant="secondary" disabled={!todayRow?.check_in_at || !!todayRow?.check_out_at}>Absen pulang</SubmitButton></form>
           </div>
         </Card>
         <Stat label="Sisa cuti tahunan" value={bal ? `${bal.remaining} hari` : "–"} hint={bal ? `Terpakai ${bal.used} dari ${bal.quota} hari` : undefined} />
@@ -125,7 +126,7 @@ export default async function StaffSelf({ searchParams }: { searchParams: Promis
             <Field label="Lampiran (opsional)" hint="Surat dokter atau dokumen pendukung, PDF/foto maks. 5 MB">
               <Input id="lv-file" name="file" type="file" accept="application/pdf,image/*" />
             </Field>
-            <Button type="submit">Kirim pengajuan</Button>
+            <SubmitButton>Kirim pengajuan</SubmitButton>
           </form>
         </Card>
       </div>

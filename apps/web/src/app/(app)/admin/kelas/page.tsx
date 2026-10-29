@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
 import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function createYear(fd: FormData) {
   "use server";
@@ -132,7 +133,7 @@ export default async function ClassesAdmin({ searchParams }: { searchParams: Pro
                   {teacherOpts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </Select>
               </Field>
-              <Button type="submit">Buat kelas</Button>
+              <SubmitButton>Buat kelas</SubmitButton>
             </form>
           </Card>
           <Card title="Tahun ajaran baru">
@@ -142,7 +143,7 @@ export default async function ClassesAdmin({ searchParams }: { searchParams: Pro
                 <Field label="Mulai"><Input id="y-start" name="starts_on" type="date" required /></Field>
                 <Field label="Selesai"><Input id="y-end" name="ends_on" type="date" required /></Field>
               </div>
-              <Button type="submit" variant="secondary">Simpan</Button>
+              <SubmitButton variant="secondary">Simpan</SubmitButton>
             </form>
           </Card>
         </div>

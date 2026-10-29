@@ -5,7 +5,8 @@ import { requireRole, requireModule } from "@/lib/session";
 import { invokeFunction, str } from "@/lib/actions";
 import { rupiah, tanggal, waktu } from "@/lib/format";
 import { myChildren } from "@/lib/queries";
-import { Button, Card, Empty, Field, Flash, PageHeader, Select, StatusBadge, Table } from "@/components/ui";
+import { Card, Empty, Field, Flash, PageHeader, Select, StatusBadge, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { ChildTabs, pickChild } from "../child-tabs";
 
 const METHOD_LABEL: Record<string, string> = {
@@ -91,7 +92,7 @@ export default async function GuardianInvoices({ searchParams }: { searchParams:
                     {["qris", "va", "ewallet", "retail"].map((m) => <option key={m} value={m}>{METHOD_LABEL[m]}</option>)}
                   </Select>
                 </Field>
-                <Button type="submit">Bayar sekarang</Button>
+                <SubmitButton>Bayar sekarang</SubmitButton>
                 <p className="text-xs text-muted">Bisa juga membayar tunai di loket Tata Usaha.</p>
               </form>
             )}

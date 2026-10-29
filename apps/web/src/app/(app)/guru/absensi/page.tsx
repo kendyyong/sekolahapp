@@ -2,7 +2,8 @@ import { requireRole } from "@/lib/session";
 import { run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
 import { classRoster, myClasses } from "@/lib/queries";
-import { Button, Card, DownloadLink, Empty, Field, Flash, Input, PageHeader, Select, StatusBadge, Table } from "@/components/ui";
+import { Card, DownloadLink, Empty, Field, Flash, Input, PageHeader, Select, StatusBadge, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const STATUSES = ["hadir", "terlambat", "izin", "sakit", "alpa"] as const;
 
@@ -52,7 +53,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
           </Select>
         </Field>
         <Field label="Tanggal"><Input id="tanggal" name="tanggal" type="date" defaultValue={date} /></Field>
-        <Button variant="secondary" type="submit">Tampilkan</Button>
+        <SubmitButton variant="secondary">Tampilkan</SubmitButton>
         {classId && <DownloadLink href={`/unduh/absensi-kelas?kelas=${classId}&bulan=${date.slice(0, 7)}`}>Rekap bulan ini (Excel)</DownloadLink>}
       </form>
 
@@ -80,7 +81,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
                 );
               })}
             </Table>
-            <div className="mt-3 flex gap-2"><Button type="submit">Simpan absensi</Button></div>
+            <div className="mt-3 flex gap-2"><SubmitButton>Simpan absensi</SubmitButton></div>
           </form>
 
           <div className="flex flex-col gap-4">
@@ -93,7 +94,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
               <form action={closeDay}>
                 <input type="hidden" name="class_id" value={classId} />
                 <input type="hidden" name="date" value={date} />
-                <Button variant="danger" type="submit">Tutup absensi hari ini</Button>
+                <SubmitButton variant="danger">Tutup absensi hari ini</SubmitButton>
               </form>
             </Card>
           </div>

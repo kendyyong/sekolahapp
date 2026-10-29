@@ -1,7 +1,8 @@
 import { requireRole, requireModule } from "@/lib/session";
 import { num, run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
-import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { Badge, Card, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function addBehavior(fd: FormData) {
   "use server";
@@ -79,7 +80,7 @@ export default async function CounselorHome({ searchParams }: { searchParams: Pr
             </div>
             <Field label="Tanggal"><Input id="b-date" name="occurred_on" type="date" defaultValue={today} /></Field>
             <Field label="Keterangan"><Textarea id="b-desc" name="description" required /></Field>
-            <Button type="submit">Simpan</Button>
+            <SubmitButton>Simpan</SubmitButton>
           </form>
         </Card>
       </div>

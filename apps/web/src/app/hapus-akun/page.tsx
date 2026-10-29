@@ -5,7 +5,8 @@ import { tanggal } from "@/lib/format";
 import { LEGAL } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 import { LegalPage } from "@/components/legal/legal-page";
-import { Badge, Button, Field, Flash, LinkButton, Textarea } from "@/components/ui";
+import { Badge, Field, Flash, LinkButton, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Hapus akun · SekolahApp" };
 
@@ -86,7 +87,7 @@ export default async function DeleteAccount({ searchParams }: { searchParams: Pr
             {pending ? (
               <form action={cancelDeletion}>
                 <p className="mb-3">Akun Anda ({user.email}) akan dihapus paling lambat 14 hari sejak permintaan dibuat.</p>
-                <Button type="submit" variant="secondary">Batalkan permintaan</Button>
+                <SubmitButton variant="secondary">Batalkan permintaan</SubmitButton>
               </form>
             ) : (
               <form action={requestDeletion} className="flex flex-col gap-3">
@@ -94,7 +95,7 @@ export default async function DeleteAccount({ searchParams }: { searchParams: Pr
                 <Field label="Alasan (opsional)">
                   <Textarea id="reason" name="reason" rows={3} maxLength={500} placeholder="Misalnya: anak sudah lulus" />
                 </Field>
-                <Button type="submit" className="self-start">Minta hapus akun</Button>
+                <SubmitButton className="self-start">Minta hapus akun</SubmitButton>
               </form>
             )}
           </div>

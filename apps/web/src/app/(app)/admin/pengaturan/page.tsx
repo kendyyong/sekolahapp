@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
-import { Button, Card, Field, Flash, Input, PageHeader } from "@/components/ui";
+import { Card, Field, Flash, Input, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const APP_MODES = [
   { value: "full", label: "Penuh", hint: "Murid absen sendiri dengan QR kelas dan mengerjakan tugas di aplikasi." },
@@ -91,7 +92,7 @@ export default async function SchoolSettings({ searchParams }: { searchParams: P
             <Field label="Denda keterlambatan (Rp)"><Input id="fee" name="late_fee_amount" type="number" defaultValue={st.late_fee_amount ?? 0} /></Field>
           </div>
         </Card>
-        <div className="lg:col-span-2"><Button type="submit">Simpan pengaturan</Button></div>
+        <div className="lg:col-span-2"><SubmitButton>Simpan pengaturan</SubmitButton></div>
       </form>
     </>
   );

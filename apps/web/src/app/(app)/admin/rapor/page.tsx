@@ -4,6 +4,7 @@ import { num, optStr, run, str } from "@/lib/actions";
 import { tanggal } from "@/lib/format";
 import { activeTerms, termLabel } from "@/lib/report";
 import { Badge, Button, Card, Empty, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const back = (fd: FormData) => `/admin/rapor?semester=${str(fd, "term") || str(fd, "semester")}`;
 
@@ -80,7 +81,7 @@ export default async function ReportAdmin({ searchParams }: { searchParams: Prom
           <Field label="Semester">
             <Select id="semester" name="semester" defaultValue={term?.id}>{terms.map((t) => <option key={t.id} value={t.id}>{termLabel(t)}</option>)}</Select>
           </Field>
-          <Button variant="secondary" type="submit">Tampilkan</Button>
+          <SubmitButton variant="secondary">Tampilkan</SubmitButton>
         </form>
       )}
 
@@ -159,7 +160,7 @@ export default async function ReportAdmin({ searchParams }: { searchParams: Prom
                     <Field label="Tanggal rapor"><Input name="report_date" type="date" defaultValue={t?.report_date ?? ""} /></Field>
                     <Field label="Tempat"><Input name="report_place" placeholder="Kota" defaultValue={t?.report_place ?? ""} /></Field>
                   </div>
-                  <Button type="submit" variant={t ? "secondary" : "primary"} className="self-start">{t ? "Simpan" : "Buat semester"}</Button>
+                  <SubmitButton variant={t ? "secondary" : "primary"} className="self-start">{t ? "Simpan" : "Buat semester"}</SubmitButton>
                 </form>
               </Card>
             ))}
@@ -173,7 +174,7 @@ export default async function ReportAdmin({ searchParams }: { searchParams: Prom
                 <Field label="Bobot sumatif akhir semester (%)" hint="Sisanya dari rata-rata sumatif lingkup materi. Formatif tidak masuk nilai rapor.">
                   <Input name="weight" inputMode="numeric" defaultValue={st.report_sas_weight ?? 50} />
                 </Field>
-                <Button type="submit" variant="secondary" className="self-start">Simpan</Button>
+                <SubmitButton variant="secondary" className="self-start">Simpan</SubmitButton>
               </form>
             </Card>
 
@@ -188,7 +189,7 @@ export default async function ReportAdmin({ searchParams }: { searchParams: Prom
                       <div className="w-20 shrink-0"><Input name={`o_${s.id}`} inputMode="numeric" defaultValue={s.report_order} aria-label={`Urutan ${s.name}`} /></div>
                     </label>
                   ))}
-                  <Button type="submit" variant="secondary" className="mt-2 self-start">Simpan urutan</Button>
+                  <SubmitButton variant="secondary" className="mt-2 self-start">Simpan urutan</SubmitButton>
                 </form>
               )}
             </Card>

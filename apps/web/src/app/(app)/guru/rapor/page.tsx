@@ -2,7 +2,8 @@ import Link from "next/link";
 import { requireModule } from "@/lib/session";
 import { classRoster } from "@/lib/queries";
 import { activeTerms, termLabel } from "@/lib/report";
-import { Badge, Button, Card, DownloadLink, Empty, Field, Flash, LinkButton, PageHeader, Select, Table } from "@/components/ui";
+import { Badge, Card, DownloadLink, Empty, Field, Flash, LinkButton, PageHeader, Select, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 // Rapor kelas untuk wali kelas: kelengkapan nilai per mapel dan status rapor tiap murid.
 export default async function HomeroomReports({ searchParams }: {
@@ -65,7 +66,7 @@ export default async function HomeroomReports({ searchParams }: {
         <Field label="Semester">
           <Select id="semester" name="semester" defaultValue={term.id}>{terms.map((t) => <option key={t.id} value={t.id}>{termLabel(t)}</option>)}</Select>
         </Field>
-        <Button variant="secondary" type="submit">Tampilkan</Button>
+        <SubmitButton variant="secondary">Tampilkan</SubmitButton>
       </form>
       {term.published_at && <p className="mb-5 rounded-md bg-good-soft px-4 py-3 text-sm text-ink">Rapor semester ini sudah diterbitkan dan bisa dilihat orang tua.</p>}
 

@@ -3,6 +3,7 @@ import { requirePlatform } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah, tanggal } from "@/lib/format";
 import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table, cx } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { PAYMENT_LABEL, PLAN_LABEL, PLAN_TONE } from "../plans";
 
 async function saveSchool(fd: FormData) {
@@ -128,7 +129,7 @@ export default async function PlatformSchools({ searchParams }: { searchParams: 
                   </Select>
                 </Field>
                 <Field label="Atau buat yayasan baru"><Input name="new_foundation" placeholder="Nama yayasan" /></Field>
-                <Button type="submit">Simpan</Button>
+                <SubmitButton>Simpan</SubmitButton>
               </form>
             </Card>
             <Card title="Akun pembayaran (Xendit)">
@@ -143,7 +144,7 @@ export default async function PlatformSchools({ searchParams }: { searchParams: 
                     <Select name="bearer" defaultValue={account?.service_fee_bearer ?? "payer"}><option value="payer">Orang tua</option><option value="school">Sekolah</option></Select>
                   </Field>
                 </div>
-                <Button type="submit" variant="secondary">Simpan akun pembayaran</Button>
+                <SubmitButton variant="secondary">Simpan akun pembayaran</SubmitButton>
               </form>
             </Card>
             {detail.foundation_id && (
@@ -154,7 +155,7 @@ export default async function PlatformSchools({ searchParams }: { searchParams: 
                 <form action={addFoundationAdmin} className="flex gap-2">
                   <input type="hidden" name="id" value={sel.id} /><input type="hidden" name="foundation_id" value={detail.foundation_id} />
                   <Input name="email" type="email" required placeholder="email@yayasan.or.id" aria-label="Email admin yayasan" className="min-w-0 flex-1" />
-                  <Button type="submit" variant="secondary">Tambah</Button>
+                  <SubmitButton variant="secondary">Tambah</SubmitButton>
                 </form>
               </Card>
             )}

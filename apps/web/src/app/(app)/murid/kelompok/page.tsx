@@ -4,6 +4,7 @@ import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah, tanggal, todayJakarta } from "@/lib/format";
 import { classRoster, myStudent } from "@/lib/queries";
 import { Badge, Button, Card, Empty, Field, Flash, Input, PageHeader, Select, StatusBadge, cx } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const POSITION: Record<string, string> = { ketua: "Ketua", sekretaris: "Sekretaris", bendahara: "Bendahara", anggota: "Anggota" };
 const ORDER = ["ketua", "sekretaris", "bendahara", "anggota"];
@@ -105,7 +106,7 @@ export default async function StudentGroups({ searchParams }: { searchParams: Pr
               <Field label="Nama kelompok"><Input id="g-name" name="name" required maxLength={80} /></Field>
               <Field label="Mapel (opsional)"><Select id="g-ta" name="ta" defaultValue=""><option value="">–</option>{((tas ?? []) as any[]).map((t) => <option key={t.id} value={t.id}>{t.subjects?.name}</option>)}</Select></Field>
               <Field label="Untuk tugas (opsional)"><Select id="g-asg" name="assignment" defaultValue=""><option value="">–</option>{(groupAssignments ?? []).map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}</Select></Field>
-              <Button type="submit">Buat</Button>
+              <SubmitButton>Buat</SubmitButton>
             </form>
           </Card>
         </div>
@@ -157,12 +158,12 @@ export default async function StudentGroups({ searchParams }: { searchParams: Pr
                     <Field label="Jabatan">
                       <Select id="inv-pos" name="position">{["sekretaris", "bendahara", "anggota"].map((p) => <option key={p} value={p}>{POSITION[p]}</option>)}</Select>
                     </Field>
-                    <Button variant="secondary" type="submit">Undang</Button>
+                    <SubmitButton variant="secondary">Undang</SubmitButton>
                   </form>
                   <form action={submitGroup} className="mt-4 border-t border-line pt-4">
                     <input type="hidden" name="group" value={sel.id} />
                     <p className="mb-2 text-xs text-muted">Syarat: ada Ketua, Sekretaris, dan Bendahara, dan semua undangan sudah dijawab.</p>
-                    <Button type="submit">Kirim ke guru untuk verifikasi</Button>
+                    <SubmitButton>Kirim ke guru untuk verifikasi</SubmitButton>
                   </form>
                 </>
               )}
@@ -186,7 +187,7 @@ export default async function StudentGroups({ searchParams }: { searchParams: Pr
                     <Input name="amount" type="number" min={1} required placeholder="Nominal" aria-label="Nominal" />
                     <Input name="description" required placeholder="Keterangan" aria-label="Keterangan" />
                     <Input name="occurred_on" type="date" defaultValue={todayJakarta()} aria-label="Tanggal" />
-                    <Button type="submit">Catat</Button>
+                    <SubmitButton>Catat</SubmitButton>
                   </form>
                 ) : <p className="text-xs text-muted">Hanya Bendahara yang dapat mencatat kas.</p>}
               </Card>

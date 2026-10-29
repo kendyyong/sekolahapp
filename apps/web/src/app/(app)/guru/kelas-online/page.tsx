@@ -2,7 +2,8 @@ import { requireRole } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { waktu } from "@/lib/format";
 import { myTeaching } from "@/lib/queries";
-import { Button, Card, Empty, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { Card, Empty, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function createSession(fd: FormData) {
   "use server";
@@ -64,7 +65,7 @@ export default async function OnlineClasses({ searchParams }: { searchParams: Pr
                     <Field label={`${t.subjects.name} · ${t.classes.name}`} className="min-w-60 flex-1">
                       <Input id={`ml-${t.id}`} name="meeting_url" type="url" defaultValue={t.meeting_url ?? ""} placeholder="https://zoom.us/j/…" />
                     </Field>
-                    <Button variant="secondary" type="submit">Simpan</Button>
+                    <SubmitButton variant="secondary">Simpan</SubmitButton>
                   </form>
                 ))}
               </div>
@@ -81,7 +82,7 @@ export default async function OnlineClasses({ searchParams }: { searchParams: Pr
               <Field label="Durasi (menit)"><Input id="os-dur" name="duration" type="number" defaultValue={60} min={5} max={600} /></Field>
               <Field label="Link Zoom/Meet"><Input id="os-url" name="url" type="url" required placeholder="https://" /></Field>
               <Field label="Kode akses (opsional)"><Input id="os-pass" name="passcode" /></Field>
-              <Button type="submit">Bagikan ke murid</Button>
+              <SubmitButton>Bagikan ke murid</SubmitButton>
             </form>
           </Card>
         </div>

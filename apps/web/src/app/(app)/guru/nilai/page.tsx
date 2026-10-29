@@ -4,7 +4,8 @@ import { run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
 import { classRoster, myTeaching } from "@/lib/queries";
 import { activeTerms, KIND_LABEL, termLabel } from "@/lib/report";
-import { Badge, Button, Card, Empty, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { Badge, Card, Empty, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const back = (fd: FormData) => str(fd, "back");
 const score = (v: string) => {
@@ -149,7 +150,7 @@ export default async function GradesPage({ searchParams }: {
             {terms.map((t) => <option key={t.id} value={t.id}>{termLabel(t)}</option>)}
           </Select>
         </Field>
-        <Button variant="secondary" type="submit">Tampilkan</Button>
+        <SubmitButton variant="secondary">Tampilkan</SubmitButton>
       </form>
       {locked && (
         <p className="mb-5 rounded-md border border-line bg-warn-soft px-4 py-3 text-sm text-ink">
@@ -186,7 +187,7 @@ export default async function GradesPage({ searchParams }: {
                 </Table>
                 {!locked && (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button type="submit">Simpan nilai</Button>
+                    <SubmitButton>Simpan nilai</SubmitButton>
                   </div>
                 )}
               </form>
@@ -230,7 +231,7 @@ export default async function GradesPage({ searchParams }: {
                 <input type="hidden" name="back" value={base} />
                 <input type="hidden" name="term" value={term.id} />
                 <input type="hidden" name="ta" value={ta.id} />
-                <Button type="submit">{grades?.length ? "Hitung ulang nilai rapor" : "Hitung nilai rapor"}</Button>
+                <SubmitButton>{grades?.length ? "Hitung ulang nilai rapor" : "Hitung nilai rapor"}</SubmitButton>
                 {!!grades?.some((g) => g.edited) && (
                   <label className="flex items-center gap-2 text-sm text-muted"><input type="checkbox" name="reset" /> Timpa juga yang sudah saya ubah</label>
                 )}
@@ -268,7 +269,7 @@ export default async function GradesPage({ searchParams }: {
                     );
                   })}
                 </Table>
-                {!locked && <Button type="submit" className="mt-3">Simpan perubahan</Button>}
+                {!locked && <SubmitButton className="mt-3">Simpan perubahan</SubmitButton>}
               </form>
             )}
           </Card>
@@ -299,7 +300,7 @@ export default async function GradesPage({ searchParams }: {
                     ))}
                   </fieldset>
                 )}
-                <Button type="submit" className="self-start">Buat penilaian</Button>
+                <SubmitButton className="self-start">Buat penilaian</SubmitButton>
               </form>
             </Card>
           )}
@@ -327,7 +328,7 @@ export default async function GradesPage({ searchParams }: {
               <Field label="Deskripsi" hint="Tulis sebagai frasa, misalnya: menjumlahkan dan mengurangkan pecahan">
                 <Textarea id="description" name="description" rows={2} required />
               </Field>
-              <Button type="submit" variant="secondary" className="self-start">Tambah TP</Button>
+              <SubmitButton variant="secondary" className="self-start">Tambah TP</SubmitButton>
             </form>
           </Card>
         </div>

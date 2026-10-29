@@ -1,7 +1,8 @@
 import { requireRole, ROLE_LABEL, type Role, requireModule } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { tanggal, waktu } from "@/lib/format";
-import { Button, Card, Empty, Field, Flash, Input, PageHeader, StatusBadge, Textarea } from "@/components/ui";
+import { Card, Empty, Field, Flash, Input, PageHeader, StatusBadge, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function createDirective(fd: FormData) {
   "use server";
@@ -78,7 +79,7 @@ export default async function Directives({ searchParams }: { searchParams: Promi
                 ))}
               </div>
             </fieldset>
-            <Button type="submit">Kirim arahan</Button>
+            <SubmitButton>Kirim arahan</SubmitButton>
           </form>
         </Card>
       </div>

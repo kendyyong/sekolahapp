@@ -3,6 +3,7 @@ import { requireRole, requireModule } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah, tanggal, todayJakarta, waktu } from "@/lib/format";
 import { Button, Card, Field, Flash, Input, PageHeader, Select, StatusBadge, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const METHOD: Record<string, string> = { cash: "Tunai", transfer: "Transfer", va: "Virtual Account", qris: "QRIS", ewallet: "E-wallet", retail: "Gerai retail" };
 
@@ -112,14 +113,14 @@ export default async function InvoicesPage({ searchParams }: {
                 <Select name="method" aria-label="Metode"><option value="cash">Tunai</option><option value="transfer">Transfer</option></Select>
               </div>
               <Input name="notes" placeholder="Catatan (opsional)" aria-label="Catatan" />
-              <Button type="submit">Simpan pembayaran</Button>
+              <SubmitButton>Simpan pembayaran</SubmitButton>
             </form>
           )}
           {i.status === "unpaid" && Number(i.paid_amount) === 0 && (
             <form action={voidInvoice} className="mt-3 flex gap-2">
               <input type="hidden" name="invoice_id" value={i.id} /><input type="hidden" name="back" value={back} />
               <Input name="reason" placeholder="Alasan pembatalan" aria-label="Alasan pembatalan" required />
-              <Button variant="secondary" type="submit">Batalkan</Button>
+              <SubmitButton variant="secondary">Batalkan</SubmitButton>
             </form>
           )}
         </Card>
@@ -164,7 +165,7 @@ export default async function InvoicesPage({ searchParams }: {
               <Field label="Bulan" hint="Membuat tagihan untuk semua murid aktif dari biaya bulanan, termasuk potongan beasiswa. Aman diulang.">
                 <Input id="period" name="period" type="month" defaultValue={thisMonth} required />
               </Field>
-              <Button type="submit">Buat tagihan</Button>
+              <SubmitButton>Buat tagihan</SubmitButton>
             </form>
           </Card>
           <Card title="Tagihan sekali bayar">
@@ -176,7 +177,7 @@ export default async function InvoicesPage({ searchParams }: {
                 <Field label="Nominal (Rp)"><Input id="o-amt" name="amount" type="number" min={1} required /></Field>
                 <Field label="Jatuh tempo"><Input id="o-due" name="due_on" type="date" required /></Field>
               </div>
-              <Button type="submit" variant="secondary">Buat tagihan</Button>
+              <SubmitButton variant="secondary">Buat tagihan</SubmitButton>
             </form>
           </Card>
         </div>

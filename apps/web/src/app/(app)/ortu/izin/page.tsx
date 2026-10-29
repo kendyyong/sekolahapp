@@ -2,7 +2,8 @@ import { requireRole } from "@/lib/session";
 import { run, str, uploadFile } from "@/lib/actions";
 import { tanggal, todayJakarta, waktu } from "@/lib/format";
 import { myChildren, signedUrl } from "@/lib/queries";
-import { Button, Card, Empty, Field, Flash, Input, PageHeader, Select, StatusBadge, Table, Textarea } from "@/components/ui";
+import { Card, Empty, Field, Flash, Input, PageHeader, Select, StatusBadge, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { ChildTabs, pickChild } from "../child-tabs";
 
 const LETTER_TYPES = ["application/pdf", "image/png", "image/jpeg"];
@@ -61,7 +62,7 @@ export default async function GuardianLeave({ searchParams }: { searchParams: Pr
             <Field label="Surat dokter / surat izin" hint="PDF, JPG, atau PNG, maks. 5 MB. Opsional.">
               <Input id="file" name="file" type="file" accept="application/pdf,image/png,image/jpeg" />
             </Field>
-            <Button type="submit">Kirim pengajuan</Button>
+            <SubmitButton>Kirim pengajuan</SubmitButton>
           </form>
         </Card>
         <div className="min-w-0">
@@ -80,7 +81,7 @@ export default async function GuardianLeave({ searchParams }: { searchParams: Pr
                   {r.status === "pending" && r.requested_by === user.id && (
                     <form action={cancelLeave}>
                       <input type="hidden" name="id" value={r.id} /><input type="hidden" name="student_id" value={child.id} />
-                      <Button type="submit" variant="ghost">Batalkan</Button>
+                      <SubmitButton variant="ghost">Batalkan</SubmitButton>
                     </form>
                   )}
                 </td>
