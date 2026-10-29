@@ -33,7 +33,7 @@ Urutan yang disarankan, dari nol sampai sekolah pertama bisa memakai aplikasi. K
    npx supabase login
    npx supabase link --project-ref <ref>
    npx supabase db push            # semua migrasi di supabase/migrations
-   npx supabase functions deploy   # admin-users, monthly-jobs, payments-create, payments-webhook, push-dispatch
+   npx supabase functions deploy   # admin-users, monthly-jobs, payments-create, payments-webhook, push-dispatch, wa-dispatch
    ```
 
    Jangan menjalankan `seed.sql` di produksi (isinya akun demo dengan kata sandi yang diketahui umum).
@@ -47,8 +47,11 @@ Urutan yang disarankan, dari nol sampai sekolah pertama bisa memakai aplikasi. K
      XENDIT_PLATFORM_ACCOUNT_ID=... \
      CRON_SECRET=$(openssl rand -hex 32) \
      WEBHOOK_SECRET=$(openssl rand -hex 32) \
+     SITE_URL=https://sekolahapp.wahanamediaberkat.com \
      FCM_SERVICE_ACCOUNT="$(cat service-account.json)"
    ```
+
+   `SITE_URL` dipakai untuk tautan "Buka aplikasi" di pesan WhatsApp.
 
    Catat nilai `CRON_SECRET` dan `WEBHOOK_SECRET`; keduanya dipakai di poin 6 dan 7.
 
@@ -78,7 +81,25 @@ Urutan yang disarankan, dari nol sampai sekolah pertama bisa memakai aplikasi. K
    - Tipe *Supabase Edge Functions*, fungsi `push-dispatch`, metode POST
    - Header `x-webhook-secret: <WEBHOOK_SECRET>`
 
-8. Database → Backups: pastikan backup harian aktif. Point-in-time recovery disarankan setelah ada sekolah berbayar.
+8. **Notifikasi WhatsApp.** Buat webhook kedua dengan isian yang sama seperti poin 7, tetapi fungsi `wa-dispatch`.
+   Agar pesan yang gagal (misalnya HP sekolah sedang offline) dicoba ulang, jadwalkan juga di SQL Editor:
+
+   ```sql
+   select vault.create_secret('<WEBHOOK_SECRET>', 'webhook_secret');
+
+   select cron.schedule('wa-dispatch', '*/5 * * * *',
+     $$ select net.http_post(
+          url     := 'https://<ref>.supabase.co/functions/v1/wa-dispatch',
+          headers := jsonb_build_object(
+                       'Content-Type', 'application/json',
+                       'x-webhook-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'webhook_secret')),
+          body    := '{"batch": true}'::jsonb) $$);
+   ```
+
+   Setiap sekolah menghubungkan nomor WhatsApp-nya sendiri di menu **Notifikasi WhatsApp** (token dari fonnte.com),
+   jadi biaya pesan dibayar sekolah langsung ke Fonnte.
+
+9. Database → Backups: pastikan backup harian aktif. Point-in-time recovery disarankan setelah ada sekolah berbayar.
 
 ## 2. Web di Vercel
 

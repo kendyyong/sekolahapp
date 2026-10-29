@@ -6,8 +6,14 @@ import { SubmitButton } from "@/components/submit-button";
 async function saveProfile(fd: FormData) {
   "use server";
   const { user } = await getSession();
-  await run("/profil", "Profil disimpan.", (sb) =>
-    sb.from("profiles").update({ full_name: str(fd, "full_name"), ...(fd.has("nip") ? { nip: optStr(fd, "nip") } : {}) }).eq("id", user.id));
+  await run("/profil", "Profil disimpan.", (sb) => {
+    const phone = optStr(fd, "phone");
+    if (phone && !/^(\+?62|0)8[\d\s-]{7,16}$/.test(phone)) throw new Error("Nomor WhatsApp tidak valid. Contoh: 0812 3456 7890");
+    return sb.from("profiles").update({
+      full_name: str(fd, "full_name"), phone, wa_opt_out: fd.get("wa") !== "on",
+      ...(fd.has("nip") ? { nip: optStr(fd, "nip") } : {}),
+    }).eq("id", user.id);
+  });
 }
 
 async function changePassword(fd: FormData) {
@@ -25,7 +31,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
   const { profile, user, roles, supabase } = await getSession();
   const [{ data: deletion }, { data: me }] = await Promise.all([
     supabase.from("account_deletion_requests").select("id").eq("user_id", user.id).eq("status", "pending").maybeSingle(),
-    supabase.from("profiles").select("nip").eq("id", user.id).single(),
+    supabase.from("profiles").select("nip, phone, wa_opt_out").eq("id", user.id).single(),
   ]);
   // NIP dicetak di bawah tanda tangan rapor, jadi hanya ditanyakan ke pegawai sekolah.
   const staff = roles.some((r) => r.role !== "student" && r.role !== "guardian");
@@ -38,6 +44,13 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
           <form action={saveProfile} className="flex flex-col gap-3">
             <Field label="Nama lengkap"><Input id="full_name" name="full_name" defaultValue={profile?.full_name ?? ""} required /></Field>
             <Field label="Email"><Input id="email" value={user.email ?? ""} disabled readOnly /></Field>
+            <Field label="Nomor WhatsApp" hint="Untuk notifikasi sekolah lewat WhatsApp (bila sekolah mengaktifkannya).">
+              <Input id="phone" name="phone" type="tel" inputMode="tel" placeholder="0812 3456 7890" defaultValue={me?.phone ?? ""} />
+            </Field>
+            <label className="flex items-center gap-2 text-sm text-ink">
+              <input type="checkbox" name="wa" defaultChecked={!me?.wa_opt_out} className="size-4 accent-[var(--color-brand-solid)]" />
+              Kirimi saya notifikasi lewat WhatsApp
+            </label>
             {staff && (
               <Field label="NIP / NIY (opsional)" hint="Dicetak di bawah tanda tangan rapor.">
                 <Input id="nip" name="nip" inputMode="numeric" pattern="[0-9 .\-]{8,30}" title="8–30 angka" defaultValue={me?.nip ?? ""} />
