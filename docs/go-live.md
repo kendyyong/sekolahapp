@@ -18,7 +18,16 @@ Urutan yang disarankan, dari nol sampai sekolah pertama bisa memakai aplikasi. K
 
 1. Buat proyek baru di [supabase.com](https://supabase.com), region **Southeast Asia (Singapore)**. Simpan kata sandi database di pengelola kata sandi.
 2. Untuk produksi pakai paket **Pro**. Proyek Free dijeda setelah seminggu tidak aktif dan tidak punya backup harian.
-3. Dari folder repo:
+3. Kirim migrasi dan Edge Functions. Cara termudah tanpa memasang apa pun di komputer, lewat GitHub Actions:
+
+   1. Buat token akun di [supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens).
+   2. Di GitHub: repo → **Settings → Secrets and variables → Actions → New repository secret**, isi tiga rahasia:
+      `SUPABASE_ACCESS_TOKEN` (token tadi), `SUPABASE_DB_PASSWORD` (kata sandi database proyek), dan
+      `SUPABASE_PROJECT_REF` (bagian depan alamat `https://<ref>.supabase.co`).
+   3. Tab **Actions → Deploy Supabase → Run workflow**. Jalankan dulu dengan mode `cek` untuk melihat daftar migrasi,
+      lalu sekali lagi dengan mode `jalankan`.
+
+   Atau dari komputer sendiri:
 
    ```bash
    npx supabase login
