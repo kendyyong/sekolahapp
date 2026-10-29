@@ -20,6 +20,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/admin/mapel", label: "Mapel & Pengajar", icon: "book" },
     { href: "/admin/murid", label: "Data Murid", icon: "users" },
     { href: "/admin/rapor", label: "E-Rapor", icon: "scroll", module: "grades" },
+    { href: "/admin/ppdb", label: "PPDB Online", icon: "userPlus", module: "ppdb" },
     { href: "/admin/kartu", label: "Kartu Pelajar", icon: "idCard", group: "Operasional" },
     { href: "/kios", label: "Kios Absen", icon: "scan" },
     { ...announcements },
@@ -31,6 +32,7 @@ export const NAV: Record<Role, NavItem[]> = {
   principal: [
     { href: "/kepsek", label: "Dasbor", icon: "dashboard", module: "dashboard", group: "Utama" },
     { href: "/admin/rapor", label: "E-Rapor", icon: "scroll", module: "grades" },
+    { href: "/admin/ppdb", label: "PPDB Online", icon: "userPlus", module: "ppdb" },
     { href: "/kepsek/cuti", label: "Persetujuan Cuti", icon: "calendarCheck", module: "staff", group: "Kepegawaian" },
     { href: "/kepsek/arahan", label: "Arahan untuk Guru", icon: "clipboardList", module: "staff" },
     { href: "/kepsek/kehadiran", label: "Kehadiran Guru", icon: "userCheck", module: "staff" },
@@ -60,6 +62,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/tu", label: "Ringkasan Keuangan", icon: "wallet", module: "finance", group: "Keuangan" },
     { href: "/tu/tagihan", label: "Tagihan & Pembayaran", icon: "receipt", module: "finance" },
     { href: "/tu/tunggakan", label: "Tunggakan", icon: "alert", module: "finance" },
+    { href: "/admin/ppdb", label: "PPDB Online", icon: "userPlus", module: "ppdb" },
     { href: "/tu/biaya", label: "Master Biaya", icon: "tags", module: "finance", group: "Pengaturan Biaya" },
     { href: "/tu/beasiswa", label: "Beasiswa & Potongan", icon: "percent", module: "finance" },
     { href: "/kios", label: "Kios Absen", icon: "scan", group: "Operasional" },

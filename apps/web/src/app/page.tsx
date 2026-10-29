@@ -27,6 +27,7 @@ const MODULE_LABEL: Record<string, string> = {
   dashboard: "Dasbor kepala sekolah",
   foundation: "Dasbor yayasan multi-sekolah",
   whitelabel: "Nama & logo sekolah sendiri",
+  ppdb: "PPDB online",
 };
 
 const FAQ = [
