@@ -31,7 +31,7 @@ export const ROLE_HOME: Record<Role, string> = {
 export interface RoleOption { school_id: string; school_name: string; role: Role }
 
 /** Modul paket langganan (lihat tabel plans di database). */
-export type Module = "core" | "staff" | "finance" | "grades" | "counseling" | "dashboard" | "foundation" | "whitelabel" | "ppdb" | "cbt" | "whatsapp" | "canteen";
+export type Module = "core" | "staff" | "finance" | "grades" | "counseling" | "dashboard" | "foundation" | "whitelabel" | "ppdb" | "cbt" | "whatsapp" | "canteen" | "payroll";
 
 export const MODULE_LABEL: Record<Module, string> = {
   core: "Absensi, tugas, izin, pengumuman, pesan",
@@ -46,6 +46,7 @@ export const MODULE_LABEL: Record<Module, string> = {
   cbt: "Ujian online (CBT)",
   whatsapp: "Notifikasi WhatsApp",
   canteen: "Kantin digital (jajan pakai kartu pelajar)",
+  payroll: "Penggajian guru & staf",
 };
 
 export interface AdminScopes { platform: boolean; foundations: { id: string; name: string }[] }

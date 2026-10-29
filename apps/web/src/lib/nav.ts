@@ -11,7 +11,9 @@ const announcements: NavItem = { href: "/pengumuman", label: "Pengumuman", icon:
 const staffSelf: NavItem[] = [
   { href: "/pegawai", label: "Absen & Cuti Saya", icon: "fingerprint", module: "staff", group: "Kepegawaian" },
   { href: "/pegawai/arahan", label: "Arahan Kepsek", icon: "clipboardList", module: "staff" },
+  { href: "/pegawai/gaji", label: "Slip Gaji", icon: "fileText", module: "payroll" },
 ];
+const payroll: NavItem = { href: "/gaji", label: "Penggajian", icon: "banknote", module: "payroll" };
 
 export const NAV: Record<Role, NavItem[]> = {
   school_admin: [
@@ -25,6 +27,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/admin/kartu", label: "Kartu Pelajar", icon: "idCard", group: "Operasional" },
     { href: "/kios", label: "Kios Absen", icon: "scan" },
     { href: "/tu/kantin", label: "Kantin Digital", icon: "utensils", module: "canteen" },
+    { ...payroll },
     { ...announcements },
     { href: "/admin/identitas", label: "Identitas & Merek", icon: "building", group: "Administrasi" },
     { href: "/admin/pengguna", label: "Akun & Peran", icon: "userCog" },
@@ -40,6 +43,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/kepsek/cuti", label: "Persetujuan Cuti", icon: "calendarCheck", module: "staff", group: "Kepegawaian" },
     { href: "/kepsek/arahan", label: "Arahan untuk Guru", icon: "clipboardList", module: "staff" },
     { href: "/kepsek/kehadiran", label: "Kehadiran Guru", icon: "userCheck", module: "staff" },
+    { ...payroll, label: "Persetujuan Gaji" },
     { ...announcements, group: "Komunikasi" },
   ],
   teacher: [
@@ -73,15 +77,17 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/tu/beasiswa", label: "Beasiswa & Potongan", icon: "percent", module: "finance" },
     { href: "/tu/kantin", label: "Kantin Digital", icon: "utensils", module: "canteen", group: "Kantin" },
     { href: "/kantin", label: "Kasir Kantin", icon: "store", module: "canteen" },
+    { ...payroll, group: "Kepegawaian" },
     { href: "/kios", label: "Kios Absen", icon: "scan", group: "Operasional" },
     { ...announcements },
-    ...staffSelf,
+    ...staffSelf.map((i) => (i.group ? { ...i, group: "Data Saya" } : i)),
   ],
   canteen: [
     { href: "/kantin", label: "Kasir", icon: "store", module: "canteen", group: "Kantin" },
     { href: "/kantin/menu", label: "Menu Kios", icon: "utensils", module: "canteen" },
     { href: "/kantin/penjualan", label: "Penjualan & Setoran", icon: "receipt", module: "canteen" },
     { ...announcements, group: "Informasi" },
+    { href: "/pegawai/gaji", label: "Slip Gaji", icon: "fileText", module: "payroll" },
   ],
   student: [
     { href: "/murid", label: "Beranda", icon: "home", group: "Utama" },

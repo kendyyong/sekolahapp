@@ -150,3 +150,38 @@ insert into public.canteen_items (school_id, stall_id, name, price, position) va
   ('00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000ca001', 'Air mineral', 3000, 5);
 select public.canteen_post('00000000-0000-0000-0000-000000005001', 'topup', 50000, null, null, 'cash', null, null, 'Saldo awal');
 select public.canteen_post('00000000-0000-0000-0000-000000005002', 'topup', 30000, null, null, 'cash', null, null, 'Saldo awal');
+
+-- Penggajian: komponen umum, data pegawai, absensi guru Oktober 2026 (hari kerja).
+insert into public.payroll_components (school_id, name, kind, calc, rate, applies_to_all, position) values
+  ('00000000-0000-0000-0000-00000000aaaa', 'Tunjangan jabatan', 'earning', 'fixed', 0, false, 0),
+  ('00000000-0000-0000-0000-00000000aaaa', 'Tunjangan wali kelas', 'earning', 'fixed', 250000, false, 1),
+  ('00000000-0000-0000-0000-00000000aaaa', 'Uang transport', 'earning', 'per_attendance', 15000, true, 2),
+  ('00000000-0000-0000-0000-00000000aaaa', 'Honor mengajar', 'earning', 'per_jp', 25000, false, 3),
+  ('00000000-0000-0000-0000-00000000aaaa', 'Potongan terlambat', 'deduction', 'per_late', 5000, true, 4),
+  ('00000000-0000-0000-0000-00000000aaaa', 'Potongan alpa', 'deduction', 'per_absence', 50000, true, 5),
+  ('00000000-0000-0000-0000-00000000aaaa', 'BPJS Kesehatan', 'deduction', 'percent_base', 1, true, 6);
+insert into public.payroll_employees (id, school_id, user_id, full_name, position, status, nip, base_salary, bank_name, bank_account, account_holder) values
+  ('00000000-0000-0000-0000-0000000e9001', '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a2', 'Drs. Hendra Gunawan', 'Kepala Sekolah', 'gty', '198001012005011001', 4500000, 'BSI', '7100000001', 'Hendra Gunawan'),
+  ('00000000-0000-0000-0000-0000000e9002', '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a3', 'Sari Wulandari, S.Pd', 'Guru Matematika', 'gty', null, 3200000, 'BRI', '0123456789', 'Sari Wulandari'),
+  ('00000000-0000-0000-0000-0000000e9003', '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a4', 'Budi Santoso, S.Si', 'Guru IPA', 'gtt', null, 0, 'Mandiri', '1370000003', 'Budi Santoso'),
+  ('00000000-0000-0000-0000-0000000e9004', '00000000-0000-0000-0000-00000000aaaa', '00000000-0000-0000-0000-0000000000a5', 'Lestari', 'Tata Usaha', 'pty', null, 2800000, 'BSI', '7100000004', 'Lestari'),
+  ('00000000-0000-0000-0000-0000000e9005', '00000000-0000-0000-0000-00000000aaaa', null, 'Joko Susilo', 'Satpam', 'ptt', null, 1800000, null, null, null);
+insert into public.payroll_employee_components (employee_id, component_id, school_id, rate)
+select e, c.id, c.school_id, r from public.payroll_components c
+  join (values ('00000000-0000-0000-0000-0000000e9001'::uuid, 'Tunjangan jabatan', 1000000),
+               ('00000000-0000-0000-0000-0000000e9002'::uuid, 'Tunjangan wali kelas', 250000),
+               ('00000000-0000-0000-0000-0000000e9003'::uuid, 'Tunjangan wali kelas', 250000),
+               ('00000000-0000-0000-0000-0000000e9003'::uuid, 'Honor mengajar', 30000)) v(e, n, r) on v.n = c.name
+ where c.school_id = '00000000-0000-0000-0000-00000000aaaa';
+insert into public.staff_attendance (school_id, user_id, date, status, check_in_at)
+select '00000000-0000-0000-0000-00000000aaaa', u, d::date,
+       case when u = '00000000-0000-0000-0000-0000000000a3' and extract(day from d) in (6, 20) then 'terlambat'
+            when u = '00000000-0000-0000-0000-0000000000a4' and extract(day from d) = 14 then 'alpa'
+            when u = '00000000-0000-0000-0000-0000000000a4' and extract(day from d) = 21 then 'sakit'
+            else 'hadir' end::public.staff_attendance_status,
+       d + interval '6 hours 50 minutes'
+  from unnest(array['00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-0000000000a3',
+                    '00000000-0000-0000-0000-0000000000a4', '00000000-0000-0000-0000-0000000000a5']::uuid[]) u,
+       generate_series('2026-10-01'::timestamp, '2026-10-28', '1 day') d
+ where extract(isodow from d) < 6
+on conflict do nothing;
