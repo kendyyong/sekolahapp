@@ -3,7 +3,8 @@ import { optStr, run, str } from "@/lib/actions";
 import { tanggal, todayJakarta, waktu } from "@/lib/format";
 import { myStudent } from "@/lib/queries";
 import { GeoFields } from "@/components/geo-fields";
-import { Button, Card, Empty, Field, Flash, Input, PageHeader, StatusBadge, Table } from "@/components/ui";
+import { Card, Empty, Field, Flash, Input, PageHeader, StatusBadge, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function checkIn(fd: FormData) {
   "use server";
@@ -48,7 +49,7 @@ export default async function StudentCheckIn({ searchParams }: { searchParams: P
                 <Input id="code" name="code" required autoComplete="off" className="text-center font-mono text-xl tracking-widest" />
               </Field>
               <GeoFields />
-              <Button type="submit">Absen sekarang</Button>
+              <SubmitButton>Absen sekarang</SubmitButton>
             </form>
           )}
         </Card>

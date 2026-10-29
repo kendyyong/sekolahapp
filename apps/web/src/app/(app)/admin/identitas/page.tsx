@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { contrastWithWhite } from "@/lib/brand";
 import { Badge, Button, Card, Field, Flash, Input, LinkButton, PageHeader, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { BrandFields } from "@/components/brand-fields";
 import { Letterhead } from "@/components/letterhead";
 import { SchoolMark } from "@/components/school-mark";
@@ -114,7 +115,7 @@ export default async function SchoolIdentity({ searchParams }: { searchParams: P
                     <Input name="logo" type="file" accept="image/png,image/jpeg,image/webp" required
                       className="file:mr-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1 file:text-sm file:font-semibold file:text-brand" />
                   </Field>
-                  <Button type="submit">Unggah</Button>
+                  <SubmitButton>Unggah</SubmitButton>
                 </form>
                 {s.logo_url && (
                   <form action={removeLogo}><Button variant="ghost" className="-ml-3 text-bad hover:bg-bad-soft">Hapus logo</Button></form>
@@ -143,7 +144,7 @@ export default async function SchoolIdentity({ searchParams }: { searchParams: P
                 <Field label="Email"><Input name="email" type="email" defaultValue={s.email ?? ""} placeholder="info@sekolah.sch.id" /></Field>
                 <Field label="Situs web"><Input name="website" defaultValue={s.website ?? ""} placeholder="sekolah.sch.id" /></Field>
               </div>
-              <Button type="submit" className="self-start">Simpan profil</Button>
+              <SubmitButton className="self-start">Simpan profil</SubmitButton>
             </form>
           </Card>
 
@@ -158,7 +159,7 @@ export default async function SchoolIdentity({ searchParams }: { searchParams: P
               <fieldset disabled={!whitelabel} className="contents">
                 <BrandFields color={s.brand_color} appName={s.app_name} school={s.name} logo={s.logo_url} motto={s.motto} disabled={!whitelabel} />
               </fieldset>
-              {whitelabel && <Button type="submit" className="self-start">Simpan warna & nama</Button>}
+              {whitelabel && <SubmitButton className="self-start">Simpan warna & nama</SubmitButton>}
             </form>
           </Card>
         </div>

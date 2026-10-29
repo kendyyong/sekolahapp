@@ -1,7 +1,8 @@
 import { requireRole, requireModule } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah, tanggal } from "@/lib/format";
-import { Button, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function addDiscount(fd: FormData) {
   "use server";
@@ -60,7 +61,7 @@ export default async function Discounts({ searchParams }: { searchParams: Promis
               <Field label="Mulai"><Input id="d-from" name="valid_from" type="date" required /></Field>
               <Field label="Sampai (opsional)"><Input id="d-to" name="valid_to" type="date" /></Field>
             </div>
-            <Button type="submit">Simpan</Button>
+            <SubmitButton>Simpan</SubmitButton>
           </form>
         </Card>
       </div>

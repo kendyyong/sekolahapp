@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { waktu } from "@/lib/format";
-import { Button, Empty, Textarea, cx } from "@/components/ui";
+import { Empty, Textarea, cx } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 /** Utas pesan orang tua ↔ wali kelas tentang seorang murid. */
 export async function ChatThread({ sb, studentId, me, action, back }: {
@@ -31,7 +32,7 @@ export async function ChatThread({ sb, studentId, me, action, back }: {
         <input type="hidden" name="student_id" value={studentId} />
         <input type="hidden" name="back" value={back} />
         <Textarea name="body" required rows={3} maxLength={4000} placeholder="Tulis pesan…" aria-label="Pesan" />
-        <Button type="submit" className="self-end">Kirim</Button>
+        <SubmitButton className="self-end">Kirim</SubmitButton>
       </form>
     </div>
   );

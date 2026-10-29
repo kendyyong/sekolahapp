@@ -1,7 +1,8 @@
 import { requireModule } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { tanggal, waktu } from "@/lib/format";
-import { Button, Empty, Flash, PageHeader, Select, StatusBadge, Textarea } from "@/components/ui";
+import { Empty, Flash, PageHeader, Select, StatusBadge, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function report(fd: FormData) {
   "use server";
@@ -40,7 +41,7 @@ export default async function MyDirectives({ searchParams }: { searchParams: Pro
                     <option value="dikerjakan">Sedang dikerjakan</option>
                     <option value="selesai">Selesai</option>
                   </Select>
-                  <Button type="submit">Kirim laporan</Button>
+                  <SubmitButton>Kirim laporan</SubmitButton>
                 </div>
               </form>
             </article>

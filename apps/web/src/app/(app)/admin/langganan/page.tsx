@@ -2,6 +2,7 @@ import { requireRole } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { rupiah, tanggal, waktu } from "@/lib/format";
 import { Badge, Button, Card, Empty, Field, Flash, PageHeader, Stat, StatusBadge, Table, Textarea, cx } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { PAYMENT_LABEL, PLAN_LABEL } from "../../platform/plans";
 
 const MODULE_LABEL: Record<string, string> = {
@@ -67,9 +68,9 @@ export default async function Subscription({ searchParams }: { searchParams: Pro
                 <form action={requestChange} className="mt-3 flex flex-col gap-2">
                   <input type="hidden" name="tier" value={p.tier} />
                   <Textarea name="note" rows={2} placeholder="Catatan (opsional)" aria-label={`Catatan pengajuan ${p.name}`} />
-                  <Button type="submit" variant={order.indexOf(p.tier) > order.indexOf(school?.plan ?? "free") ? "primary" : "secondary"}>
+                  <SubmitButton variant={order.indexOf(p.tier) > order.indexOf(school?.plan ?? "free") ? "primary" : "secondary"}>
                     Ajukan {order.indexOf(p.tier) > order.indexOf(school?.plan ?? "free") ? "naik" : "turun"} ke {p.name}
-                  </Button>
+                  </SubmitButton>
                 </form>
               )}
             </div>

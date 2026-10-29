@@ -1,7 +1,8 @@
 import { requireRole } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { HARI, jam } from "@/lib/format";
-import { Button, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function createSubject(fd: FormData) {
   "use server";
@@ -87,7 +88,7 @@ export default async function SubjectsAdmin({ searchParams }: { searchParams: Pr
               <Field label="Kelas"><Select id="t-class" name="class_id">{(classes ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></Field>
               <Field label="Mapel"><Select id="t-subj" name="subject_id">{(subjects ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</Select></Field>
               <Field label="Guru"><Select id="t-teacher" name="teacher_id">{teacherOpts.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}</Select></Field>
-              <Button type="submit">Simpan</Button>
+              <SubmitButton>Simpan</SubmitButton>
             </form>
           </Card>
           <Card title="Mapel">
@@ -99,7 +100,7 @@ export default async function SubjectsAdmin({ searchParams }: { searchParams: Pr
                 <Field label="Kode"><Input id="s-code" name="code" required placeholder="BIN" /></Field>
                 <Field label="Nama mapel"><Input id="s-name" name="name" required placeholder="Bahasa Indonesia" /></Field>
               </div>
-              <Button type="submit" variant="secondary">Tambah mapel</Button>
+              <SubmitButton variant="secondary">Tambah mapel</SubmitButton>
             </form>
           </Card>
         </div>

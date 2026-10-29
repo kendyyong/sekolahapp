@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Button, Field, Flash, Input } from "@/components/ui";
+import { Field, Flash, Input } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 export const metadata: Metadata = { title: "Kata sandi baru" };
 
@@ -46,7 +47,7 @@ export default async function SetPassword({ searchParams }: { searchParams: Prom
             <Field label="Ulangi kata sandi">
               <Input id="confirm" name="confirm" type="password" autoComplete="new-password" minLength={8} required />
             </Field>
-            <Button type="submit">Simpan kata sandi</Button>
+            <SubmitButton>Simpan kata sandi</SubmitButton>
           </form>
         )}
       </div>

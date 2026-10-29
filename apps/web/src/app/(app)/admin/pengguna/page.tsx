@@ -1,6 +1,7 @@
 import { requireRole, ROLE_LABEL, type Role } from "@/lib/session";
 import { invokeFunction, optStr, run, str } from "@/lib/actions";
-import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table, Tabs } from "@/components/ui";
+import { Badge, Card, Field, Flash, Input, PageHeader, Select, Table, Tabs } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const ASSIGNABLE: Role[] = ["teacher", "guardian", "student", "finance", "counselor", "principal", "school_admin"];
 
@@ -93,7 +94,7 @@ export default async function UsersAdmin({ searchParams }: { searchParams: Promi
                 {["ayah", "ibu", "wali", "orang tua"].map((r) => <option key={r} value={r}>{r}</option>)}
               </Select>
             </Field>
-            <Button type="submit">Simpan</Button>
+            <SubmitButton>Simpan</SubmitButton>
           </form>
         </Card>
       </div>

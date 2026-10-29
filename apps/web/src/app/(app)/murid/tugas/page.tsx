@@ -3,7 +3,8 @@ import { requireRole } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { waktu } from "@/lib/format";
 import { myStudent, signedUrl } from "@/lib/queries";
-import { Badge, Button, Card, Empty, Field, Flash, Input, PageHeader, Table, Textarea } from "@/components/ui";
+import { Badge, Card, Empty, Field, Flash, Input, PageHeader, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function submit(fd: FormData) {
   "use server";
@@ -81,7 +82,7 @@ export default async function StudentAssignments({ searchParams }: { searchParam
                 <Field label="Link (Google Drive, YouTube, dll.)"><Input id="s-link" name="link" type="url" defaultValue={mySub?.link_url ?? ""} /></Field>
                 <Field label="Unggah berkas (foto/PDF, maks. 20 MB)"><Input id="s-file" name="file" type="file" /></Field>
                 {mySub && <p className="text-xs text-muted">Terkirim {waktu(mySub.submitted_at)}{mySub.is_late ? " (terlambat)" : ""}. Kirim ulang untuk mengganti.</p>}
-                <Button type="submit">{mySub ? "Kirim ulang" : "Kirim jawaban"}</Button>
+                <SubmitButton>{mySub ? "Kirim ulang" : "Kirim jawaban"}</SubmitButton>
               </form>
             )}
           </Card>

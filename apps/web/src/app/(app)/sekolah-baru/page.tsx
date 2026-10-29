@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { registerSchool, WELCOME } from "@/lib/onboarding";
 import { SchoolFields, schoolDraftFrom, type SchoolDraft } from "@/components/school-fields";
-import { Button, Card, Flash, PageHeader } from "@/components/ui";
+import { Card, Flash, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function register(fd: FormData) {
   "use server";
@@ -23,7 +24,7 @@ export default async function NewSchool({ searchParams }: { searchParams: Promis
       <Card className="max-w-lg">
         <form action={register} className="flex flex-col gap-4">
           <SchoolFields draft={draft} />
-          <Button type="submit">Daftarkan sekolah</Button>
+          <SubmitButton>Daftarkan sekolah</SubmitButton>
         </form>
       </Card>
     </>

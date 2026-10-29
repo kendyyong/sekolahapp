@@ -1,7 +1,8 @@
 import { requireRole, requireModule } from "@/lib/session";
 import { num, optStr, run, str } from "@/lib/actions";
 import { rupiah } from "@/lib/format";
-import { Badge, Button, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { Badge, Card, Field, Flash, Input, PageHeader, Select, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const CATEGORY: Record<string, string> = {
   spp: "SPP", pendaftaran: "Pendaftaran", gedung: "Uang gedung", seragam: "Seragam", buku: "Buku",
@@ -91,7 +92,7 @@ export default async function FeesPage({ searchParams }: { searchParams: Promise
             <Field label="Kategori"><Select id="f-cat" name="category">{Object.entries(CATEGORY).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</Select></Field>
             <Field label="Nominal dasar (Rp)"><Input id="f-amt" name="default_amount" type="number" min={0} required /></Field>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_monthly" /> Ditagih setiap bulan</label>
-            <Button type="submit">Simpan</Button>
+            <SubmitButton>Simpan</SubmitButton>
           </form>
         </Card>
       </div>

@@ -4,6 +4,7 @@ import { num, optStr, run, str, uploadFile } from "@/lib/actions";
 import { waktu } from "@/lib/format";
 import { classRoster, myTeaching, signedUrl } from "@/lib/queries";
 import { Badge, Button, Card, Empty, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const KIND: Record<string, string> = { tugas: "Tugas", pr: "PR", kuis: "Kuis", proyek: "Proyek" };
 
@@ -122,7 +123,7 @@ export default async function TeacherAssignments({ searchParams }: {
                       aria-label="Nilai" required className="w-20 rounded-md border border-line bg-sheet px-2 py-1 text-sm" />
                     <input name="feedback" defaultValue={s.feedback ?? ""} placeholder="Catatan" aria-label="Catatan"
                       className="w-36 rounded-md border border-line bg-sheet px-2 py-1 text-sm" />
-                    <Button type="submit" variant="secondary" className="px-2 py-1">{s.score == null ? "Nilai" : "Ubah"}</Button>
+                    <SubmitButton variant="secondary" className="px-2 py-1">{s.score == null ? "Nilai" : "Ubah"}</SubmitButton>
                   </form>
                 )}
               </td>
@@ -157,7 +158,7 @@ export default async function TeacherAssignments({ searchParams }: {
               </tr>
             ))}
           </Table>
-          <Button type="submit" className="mt-3">Simpan tugas kertas</Button>
+          <SubmitButton className="mt-3">Simpan tugas kertas</SubmitButton>
         </form>
       </Card>
     );
@@ -222,7 +223,7 @@ export default async function TeacherAssignments({ searchParams }: {
             <Field label="Link Zoom/Meet (opsional)"><Input id="a-meet" name="meeting_url" type="url" placeholder={ta.meeting_url ?? "https://"} /></Field>
             <Field label="Lampiran (opsional, maks. 5 MB)"><Input id="a-file" name="file" type="file" /></Field>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="is_group" /> Tugas kelompok (dikumpulkan per kelompok terverifikasi)</label>
-            <Button type="submit">Bagikan tugas</Button>
+            <SubmitButton>Bagikan tugas</SubmitButton>
           </form>
         </Card>
       </div>

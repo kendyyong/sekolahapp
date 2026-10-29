@@ -1,7 +1,8 @@
 import { getSession } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { waktu } from "@/lib/format";
-import { Badge, Button, Card, Empty, Field, Flash, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { Badge, Card, Empty, Field, Flash, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const AUDIENCE: Record<string, string> = {
   all: "Semua warga sekolah", staff: "Guru & pegawai", students: "Murid", guardians: "Orang tua", class: "Satu kelas",
@@ -82,7 +83,7 @@ export default async function AnnouncementsPage({ searchParams }: { searchParams
                   {classList.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </Select>
               </Field>
-              <Button type="submit">Kirim pengumuman</Button>
+              <SubmitButton>Kirim pengumuman</SubmitButton>
             </form>
           </Card>
         )}

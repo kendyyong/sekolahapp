@@ -2,6 +2,7 @@ import { requireRole, requireModule } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
 import { Button, Card, Empty, Field, Flash, Input, PageHeader, Select, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function addNote(fd: FormData) {
   "use server";
@@ -52,7 +53,7 @@ export default async function CounselingNotes({ searchParams }: { searchParams: 
             <Field label="Topik"><Input id="n-topic" name="topic" required /></Field>
             <Field label="Catatan"><Textarea id="n-notes" name="notes" rows={5} required /></Field>
             <Field label="Tindak lanjut"><Textarea id="n-fu" name="follow_up" rows={2} /></Field>
-            <Button type="submit">Simpan</Button>
+            <SubmitButton>Simpan</SubmitButton>
           </form>
         </Card>
       </div>

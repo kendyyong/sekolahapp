@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
 import { Badge, Button, Card, DownloadLink, Field, Flash, Input, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function addStudent(fd: FormData) {
   "use server";
@@ -142,7 +143,7 @@ export default async function StudentsAdmin({ searchParams }: { searchParams: Pr
                 <Field label="Tanggal lahir"><Input id="st-bd" name="birth_date" type="date" /></Field>
               </div>
               <Field label="Kelas"><Select id="st-class" name="class_id" defaultValue=""><option value="">–</option>{(classes ?? []).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</Select></Field>
-              <Button type="submit">Simpan</Button>
+              <SubmitButton>Simpan</SubmitButton>
             </form>
           </Card>
           <Card title="Impor dari Excel">
@@ -150,7 +151,7 @@ export default async function StudentsAdmin({ searchParams }: { searchParams: Pr
               <Field label="Tempel data" hint="Satu murid per baris: NIS;Nama;L/P;Kelas. Bisa disalin langsung dari kolom Excel.">
                 <Textarea id="st-rows" name="rows" rows={6} required placeholder={"2605;Eka Putri;P;VII-A\n2606;Fajar Nugroho;L;VII-B"} className="font-mono text-xs" />
               </Field>
-              <Button type="submit" variant="secondary">Impor</Button>
+              <SubmitButton variant="secondary">Impor</SubmitButton>
             </form>
           </Card>
         </div>

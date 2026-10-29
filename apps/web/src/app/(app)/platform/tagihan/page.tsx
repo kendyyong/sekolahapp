@@ -2,6 +2,7 @@ import { requirePlatform } from "@/lib/session";
 import { run, str } from "@/lib/actions";
 import { rupiah, todayJakarta } from "@/lib/format";
 import { Badge, Button, Card, Field, Flash, Input, PageHeader, Stat, Table } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { PLAN_LABEL } from "../plans";
 
 const BILL_TONE = { open: "warn", paid: "good", waived: "neutral" } as const;
@@ -42,7 +43,7 @@ export default async function PlatformBills({ searchParams }: { searchParams: Pr
         </form>
         <form action={generate}>
           <input type="hidden" name="period" value={month} />
-          <Button type="submit">Hitung tagihan bulan ini</Button>
+          <SubmitButton>Hitung tagihan bulan ini</SubmitButton>
         </form>
       </div>
       <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">

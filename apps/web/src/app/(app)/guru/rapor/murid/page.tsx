@@ -3,7 +3,8 @@ import { requireModule } from "@/lib/session";
 import { run, str } from "@/lib/actions";
 import { tanggal } from "@/lib/format";
 import { FINAL_GRADES, PROMOTION_LABEL, type ReportView, termLabel } from "@/lib/report";
-import { Badge, Button, Card, Empty, Field, Flash, Input, LinkButton, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { Badge, Card, Empty, Field, Flash, Input, LinkButton, PageHeader, Select, Table, Textarea } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 const EXTRA_ROWS = 3;
 
@@ -99,8 +100,8 @@ export default async function StudentReportEditor({ searchParams }: {
             )}
             {!locked && (
               <div className="flex flex-wrap gap-2">
-                <Button type="submit" name="action" value="draft" variant="secondary">Simpan draf</Button>
-                <Button type="submit" name="action" value="final">Simpan & finalkan</Button>
+                <SubmitButton name="action" value="draft" variant="secondary">Simpan draf</SubmitButton>
+                <SubmitButton name="action" value="final">Simpan & finalkan</SubmitButton>
               </div>
             )}
           </form>

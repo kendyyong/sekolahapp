@@ -1,6 +1,7 @@
 import { getSession, ROLE_LABEL } from "@/lib/session";
 import { optStr, run, str } from "@/lib/actions";
-import { Badge, Button, Card, Field, Flash, Input, LinkButton, PageHeader } from "@/components/ui";
+import { Badge, Card, Field, Flash, Input, LinkButton, PageHeader } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 
 async function saveProfile(fd: FormData) {
   "use server";
@@ -45,14 +46,14 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
             <div className="flex flex-wrap gap-1.5">
               {roles.map((r) => <Badge key={r.school_id + r.role} tone="info">{ROLE_LABEL[r.role]} · {r.school_name}</Badge>)}
             </div>
-            <Button type="submit" className="self-start">Simpan</Button>
+            <SubmitButton className="self-start">Simpan</SubmitButton>
           </form>
         </Card>
         <Card title="Ganti kata sandi">
           <form action={changePassword} className="flex flex-col gap-3">
             <Field label="Kata sandi baru"><Input id="password" name="password" type="password" minLength={8} required /></Field>
             <Field label="Ulangi kata sandi"><Input id="password2" name="password2" type="password" minLength={8} required /></Field>
-            <Button type="submit" className="self-start">Ganti kata sandi</Button>
+            <SubmitButton className="self-start">Ganti kata sandi</SubmitButton>
           </form>
         </Card>
         <Card title="Hapus akun">
