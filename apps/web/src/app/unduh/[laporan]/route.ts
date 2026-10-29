@@ -1,7 +1,7 @@
 import { type NextRequest } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ROLE_LABEL, type Role, requireModule, requireRole } from "@/lib/session";
-import { tanggal, todayJakarta } from "@/lib/format";
+import { tanggal, todayJakarta, waktu } from "@/lib/format";
 import { classRoster } from "@/lib/queries";
 import { fetchAll, monthDays, monthLabel, xlsxResponse } from "@/lib/xlsx";
 import { FEE_LABEL, PPDB_STATUS, RELATIONS, type AdmissionStatus } from "@/lib/ppdb";
@@ -164,6 +164,41 @@ async function admissions(req: NextRequest) {
   });
 }
 
+/** Hasil ujian online: nilai dan skor tiap soal per murid (urutan soal asli). */
+async function examResults(req: NextRequest) {
+  const { supabase, active } = await requireModule("cbt", "teacher", "school_admin", "principal");
+  const id = req.nextUrl.searchParams.get("ujian") ?? "";
+  const { data: exam } = await supabase.from("exams")
+    .select("title, starts_at, teaching_assignments!inner(class_id, classes!inner(name), subjects!inner(name))")
+    .eq("id", id).eq("school_id", active.school_id).maybeSingle();
+  if (!exam) return new Response("Ujian tidak ditemukan", { status: 404 });
+  await supabase.rpc("cbt_close_expired", { p_exam: id });
+  const ta = exam.teaching_assignments as unknown as { class_id: string; classes: { name: string }; subjects: { name: string } };
+  const [roster, { data: qs }, { data: att }] = await Promise.all([
+    classRoster(supabase, ta.class_id),
+    supabase.from("exam_questions").select("id, points").eq("exam_id", id).order("position").order("created_at"),
+    supabase.from("exam_attempts").select("student_id, started_at, submitted_at, points, score, needs_review, leave_count").eq("exam_id", id),
+  ]);
+  const questions = qs ?? [];
+  const byStudent = new Map((att ?? []).map((a) => [a.student_id, a]));
+  return xlsxResponse({
+    filename: `ujian-${exam.title}-${ta.classes.name}.xlsx`.replace(/[^\w.-]+/g, "-").toLowerCase(),
+    sheet: "Hasil ujian",
+    title: [active.school_name, `Hasil ujian ${exam.title} · ${ta.subjects.name} · Kelas ${ta.classes.name}`, `Diunduh ${tanggal(todayJakarta(), true)}`],
+    head: ["No", "NIS", "Nama", "Status", "Mulai", "Selesai", "Keluar layar", "Nilai", ...questions.map((q, i) => `S${i + 1} (${Number(q.points)})`)],
+    rows: roster.map((st, i) => {
+      const a = byStudent.get(st.id);
+      const pts = (a?.points ?? {}) as Record<string, number>;
+      return [i + 1, st.nis ?? "", st.full_name,
+        !a ? "Tidak ikut" : !a.submitted_at ? "Mengerjakan" : a.needs_review ? "Uraian belum dinilai" : "Selesai",
+        a ? waktu(a.started_at) : "", a?.submitted_at ? waktu(a.submitted_at) : "", a?.leave_count ?? "",
+        a?.submitted_at && !a.needs_review ? Number(a.score) : "",
+        ...questions.map((q) => (pts[q.id] != null ? Number(pts[q.id]) : ""))];
+    }),
+    widths: [5, 10, 28, 18, 14, 14, 8, 8, ...questions.map(() => 7)],
+  });
+}
+
 /** Leger nilai rapor satu kelas: murid × mapel, jumlah, dan rata-rata. */
 async function ledger(req: NextRequest) {
   const { supabase, active } = await requireModule("grades", "teacher", "school_admin", "principal");
@@ -208,6 +243,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ lapo
     case "tunggakan": return arrears();
     case "leger": return ledger(req);
     case "ppdb": return admissions(req);
+    case "ujian": return examResults(req);
     case "murid": {
       const { supabase, active } = await requireRole("school_admin", "principal");
       return students(supabase, active.school_id, active.school_name);

@@ -28,6 +28,7 @@ const MODULE_LABEL: Record<string, string> = {
   foundation: "Dasbor yayasan multi-sekolah",
   whitelabel: "Nama & logo sekolah sendiri",
   ppdb: "PPDB online",
+  cbt: "Ujian online (CBT)",
 };
 
 const FAQ = [

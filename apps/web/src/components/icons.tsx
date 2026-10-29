@@ -2,7 +2,7 @@ import {
   BadgePercent, Bell, BookOpen, Building2, CalendarCheck, CalendarDays, ClipboardCheck, ClipboardList, CreditCard,
   Fingerprint, GraduationCap, HeartHandshake, House, IdCard, Landmark, LayoutDashboard, MailOpen, MapPin, Megaphone,
   MessagesSquare, NotebookPen, NotebookText, Receipt, School, ScanLine, ScrollText, Settings, ShieldCheck, Tags,
-  TriangleAlert, UserCheck, UserCog, UserPlus, Users, UsersRound, Video, Wallet, type LucideIcon,
+  TriangleAlert, Timer, UserCheck, UserCog, UserPlus, Users, UsersRound, Video, Wallet, type LucideIcon,
 } from "lucide-react";
 
 /** Ikon menu dipanggil lewat nama supaya data navigasi tetap bisa dikirim dari server ke komponen klien. */
@@ -13,7 +13,7 @@ export const ICONS = {
   mailOpen: MailOpen, mapPin: MapPin, megaphone: Megaphone, messages: MessagesSquare, notebookPen: NotebookPen,
   notebookText: NotebookText, percent: BadgePercent, receipt: Receipt, scan: ScanLine, school: School, scroll: ScrollText,
   settings: Settings, shield: ShieldCheck, tags: Tags, userCheck: UserCheck, userCog: UserCog, userPlus: UserPlus, users: Users,
-  usersRound: UsersRound, video: Video, wallet: Wallet,
+  timer: Timer, usersRound: UsersRound, video: Video, wallet: Wallet,
 } satisfies Record<string, LucideIcon>;
 
 export type IconName = keyof typeof ICONS;
