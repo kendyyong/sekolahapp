@@ -57,6 +57,15 @@ Ponsel murid bersifat opsional. Admin sekolah memilih mode di **Pengaturan Sekol
 - **Kios absen** di `/kios` untuk tablet gerbang atau laptop piket, memakai pemindai QR USB/Bluetooth (mode keyboard) atau kamera. Guru juga bisa memakai **Kios kartu pelajar** di aplikasi HP. Orang tua menerima notifikasi saat anak tiba dan pulang.
 - **Tugas kertas** dicatat dan dinilai guru di Tugas & PR → Catat tugas kertas, dengan foto jawaban opsional.
 
+## E-rapor (Kurikulum Merdeka)
+
+Tersedia di paket Pro ke atas (modul `grades`). Alurnya:
+
+1. **Admin sekolah** (`/admin/rapor`) membuat semester (tanggal, tanggal & tempat rapor), mengatur KKTP dan bobot sumatif akhir semester, serta urutan mapel di rapor.
+2. **Guru mapel** (`/guru/nilai`) menulis Tujuan Pembelajaran (TP), membuat penilaian formatif/sumatif/SAS beserta nilainya, lalu menekan *Hitung nilai rapor*. Nilai akhir = rata-rata sumatif lingkup materi dan SAS sesuai bobot; deskripsi capaian diambil dari TP tertinggi dan terendah. Guru boleh mengubah nilai/deskripsi dan perubahannya tidak ditimpa.
+3. **Wali kelas** (`/guru/rapor`) memantau kelengkapan nilai, mengisi catatan, ekstrakurikuler, dan kenaikan kelas, lalu memfinalkan. Ketidakhadiran diambil otomatis dari absensi harian. Leger nilai bisa diunduh sebagai Excel.
+4. **Kepala sekolah/admin** menerbitkan rapor. Orang tua dan murid diberi notifikasi, melihat rapor di web (`/ortu/rapor`, `/murid/rapor`) atau aplikasi HP, dan bisa mencetak/menyimpan PDF A4 dari `/rapor`. Setelah terbit, nilai semester itu terkunci sampai terbitan dibuka kembali.
+
 ## Tes
 
 ```bash

@@ -135,12 +135,49 @@ async function students(supabase: SupabaseClient, schoolId: string, schoolName: 
   });
 }
 
+/** Leger nilai rapor satu kelas: murid × mapel, jumlah, dan rata-rata. */
+async function ledger(req: NextRequest) {
+  const { supabase, active } = await requireModule("grades", "teacher", "school_admin", "principal");
+  const classId = req.nextUrl.searchParams.get("kelas") ?? "";
+  const termId = req.nextUrl.searchParams.get("semester") ?? "";
+  const [{ data: klass }, { data: term }, { data: tas }, roster] = await Promise.all([
+    supabase.from("classes").select("name").eq("id", classId).eq("school_id", active.school_id).maybeSingle(),
+    supabase.from("terms").select("name, semester, academic_years(name)").eq("id", termId).maybeSingle(),
+    supabase.from("teaching_assignments").select("id, subjects(name, report_order)").eq("class_id", classId),
+    classRoster(supabase, classId),
+  ]);
+  if (!klass || !term) return new Response("Kelas atau semester tidak ditemukan", { status: 404 });
+  const subjects = ((tas ?? []) as any[]).sort((a, b) =>
+    (a.subjects?.report_order ?? 100) - (b.subjects?.report_order ?? 100) || a.subjects?.name.localeCompare(b.subjects?.name));
+  const grades = subjects.length ? await fetchAll<{ student_id: string; teaching_assignment_id: string; score: number | null }>((from, to) =>
+    supabase.from("report_grades").select("student_id, teaching_assignment_id, score").eq("term_id", termId)
+      .in("teaching_assignment_id", subjects.map((t) => t.id)).order("id").range(from, to)) : [];
+  const byKey = new Map(grades.map((g) => [`${g.student_id}|${g.teaching_assignment_id}`, g.score == null ? null : Number(g.score)]));
+  const rows = roster.filter((s) => s.status === "aktif").map((s, i) => {
+    const scores = subjects.map((t) => byKey.get(`${s.id}|${t.id}`) ?? null);
+    const got = scores.filter((v): v is number => v != null);
+    const sum = got.reduce((a, b) => a + b, 0);
+    return [s.roll ?? i + 1, s.nis ?? "", s.full_name, ...scores.map((v) => v ?? ""), got.length ? sum : "",
+      got.length ? { value: Math.round((sum / got.length) * 100) / 100, format: "0.00" } : ""];
+  });
+  const year = (term.academic_years as unknown as { name: string } | null)?.name ?? "";
+  return xlsxResponse({
+    filename: `leger-${klass.name}-semester-${term.semester}.xlsx`,
+    sheet: `Leger ${klass.name}`,
+    title: [active.school_name, `Leger nilai rapor kelas ${klass.name} · Semester ${term.semester} (${term.name}) ${year}`],
+    head: ["No", "NIS", "Nama", ...subjects.map((t) => t.subjects?.name ?? ""), "Jumlah", "Rata-rata"],
+    rows,
+    widths: [5, 12, 28, ...subjects.map(() => 11), 9, 10],
+  });
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ laporan: string }> }) {
   const { laporan } = await params;
   switch (laporan) {
     case "absensi-kelas": return classAttendance(req);
     case "kehadiran-pegawai": return staffAttendance(req);
     case "tunggakan": return arrears();
+    case "leger": return ledger(req);
     case "murid": {
       const { supabase, active } = await requireRole("school_admin", "principal");
       return students(supabase, active.school_id, active.school_name);
