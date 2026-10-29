@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -39,6 +39,16 @@ class AppSession extends ChangeNotifier {
   /// Modul paket langganan sekolah aktif (core, staff, finance, …).
   Set<String> modules = {};
 
+  /// Merek sekolah aktif (RPC school_brand): logo, moto, dan, untuk paket Enterprise, warna & nama aplikasi.
+  Map<String, dynamic>? brand;
+  String? get logoUrl => brand?['logo_url'] as String?;
+  String? get motto => brand?['motto'] as String?;
+  String? get appName => brand?['app_name'] as String?;
+  Color? get brandColor {
+    final hex = brand?['brand_color'] as String?;
+    return hex == null ? null : Color(int.parse(hex.substring(1), radix: 16) | 0xFF000000);
+  }
+
   String get schoolId => active!.schoolId;
   String get firstName => (profile?['full_name'] as String? ?? '').split(' ').first;
 
@@ -59,22 +69,32 @@ class AppSession extends ChangeNotifier {
       active = roles.where((r) => r.key == saved).firstOrNull ??
           roles.where((r) => mobileRoles.contains(r.role)).firstOrNull ??
           roles.firstOrNull;
-      await _loadModules();
+      await _loadSchool();
     } finally {
       loading = false;
       notifyListeners();
     }
   }
 
-  Future<void> _loadModules() async {
+  Future<void> _loadSchool() async {
     final a = active;
-    modules = a == null ? {} : {...(await sb.rpc('school_modules', params: {'p_school': a.schoolId}) as List).cast<String>()};
+    if (a == null) {
+      modules = {};
+      brand = null;
+      return;
+    }
+    final r = await Future.wait<dynamic>([
+      sb.rpc('school_modules', params: {'p_school': a.schoolId}),
+      sb.rpc('school_brand', params: {'p_school': a.schoolId}),
+    ]);
+    modules = {...(r[0] as List).cast<String>()};
+    brand = r[1] as Map<String, dynamic>?;
   }
 
   Future<void> switchTo(RoleOption r) async {
     active = r;
     (await SharedPreferences.getInstance()).setString(_prefKey, r.key);
-    await _loadModules();
+    await _loadSchool();
     notifyListeners();
   }
 
@@ -84,6 +104,7 @@ class AppSession extends ChangeNotifier {
     roles = [];
     active = null;
     modules = {};
+    brand = null;
     notifyListeners();
   }
 }

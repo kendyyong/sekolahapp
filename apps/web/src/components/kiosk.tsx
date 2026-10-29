@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import jsQR from "jsqr";
 import { createClient } from "@/lib/supabase/client";
+import { SchoolMark } from "@/components/school-mark";
 import { cx } from "@/components/ui";
 
 type Direction = "in" | "out";
@@ -47,7 +48,7 @@ const clockIn = (timeZone: string) => () => new Date().toLocaleTimeString("id-ID
  * Kios absen: pemindai QR USB/Bluetooth (bekerja seperti keyboard + Enter) atau kamera perangkat.
  * Dipakai di tablet gerbang, laptop piket, atau HP guru.
  */
-export function Kiosk({ schoolName, timeZone }: { schoolName: string; timeZone: string }) {
+export function Kiosk({ schoolName, logo, timeZone }: { schoolName: string; logo: string | null; timeZone: string }) {
   const sb = useMemo(() => createClient(), []);
   const clock = useMemo(() => clockIn(timeZone), [timeZone]);
   // Setelah pukul 12 waktu sekolah, kios otomatis mencatat pulang.
@@ -132,16 +133,19 @@ export function Kiosk({ schoolName, timeZone }: { schoolName: string; timeZone: 
   return (
     <div className="flex min-h-screen flex-col bg-paper">
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-sheet px-4 py-3 lg:px-8">
-        <div>
-          <div className="text-xs font-bold uppercase tracking-wide text-muted">Kios Absen</div>
-          <div className="text-lg font-extrabold text-ink">{schoolName}</div>
+        <div className="flex items-center gap-3">
+          <SchoolMark name={schoolName} logo={logo} className="size-12" />
+          <div>
+            <div className="text-xs font-bold uppercase tracking-wide text-muted">Kios Absen</div>
+            <div className="text-lg font-extrabold text-ink">{schoolName}</div>
+          </div>
         </div>
         <div className="text-3xl font-extrabold tabular-nums text-ink">{now}</div>
         <div className="flex flex-wrap items-center gap-2">
           <div role="radiogroup" aria-label="Arah absen" className="flex rounded-lg border border-line p-1">
             {(["in", "out"] as const).map((d) => (
               <button key={d} role="radio" aria-checked={direction === d} onClick={() => { setDirection(d); input.current?.focus(); }}
-                className={cx("rounded-md px-4 py-2 text-sm font-bold", direction === d ? "bg-brand text-white" : "text-muted hover:text-ink")}>
+                className={cx("rounded-md px-4 py-2 text-sm font-bold", direction === d ? "bg-brand-solid text-white" : "text-muted hover:text-ink")}>
                 {d === "in" ? "Masuk" : "Pulang"}
               </button>
             ))}

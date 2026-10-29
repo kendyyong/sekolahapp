@@ -1,42 +1,74 @@
 @import "tailwindcss";
 
-/* Palet: tinta biru buku rapor + merah pena guru. */
+/* Palet enterprise: netral slate, biru tinta rapor sebagai warna utama, merah pena guru sebagai aksen. */
 @theme {
-  --color-paper: #f5f7fb;
+  --color-paper: #f4f6fa;
   --color-sheet: #ffffff;
-  --color-ink: #18233d;
-  --color-muted: #5b6680;
-  --color-line: #dfe3ec;
+  --color-ink: #0f1a2e;
+  --color-muted: #5a6780;
+  --color-line: #e2e7ef;
   --color-brand: #1f4fb8;
   --color-brand-strong: #183f94;
-  --color-brand-soft: #e6edfb;
+  --color-brand-soft: #e8eefb;
   --color-accent: #c8372d;
-  --color-good: #1d7a4c;
-  --color-good-soft: #e3f3ea;
-  --color-warn: #9a6a00;
-  --color-warn-soft: #fbf1d9;
+  --color-good: #18794a;
+  --color-good-soft: #e5f4ec;
+  --color-warn: #9a6200;
+  --color-warn-soft: #fcf2dc;
   --color-bad: #c8372d;
-  --color-bad-soft: #fbe9e7;
+  --color-bad-soft: #fcebe9;
+  /* Sidebar gelap */
+  --color-side: #0c1424;
+  --color-side-raised: #152036;
+  --color-side-ink: #e6ebf5;
+  --color-side-muted: #8592ad;
+  --color-side-line: #1e2a42;
+  /* Latar berwarna dengan teks putih (tombol utama, menu aktif); tetap gelap di mode gelap. */
+  --color-brand-solid: #1f4fb8;
+  --shadow-card: 0 1px 2px rgb(15 26 46 / 0.04), 0 1px 3px rgb(15 26 46 / 0.04);
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-paper: #10151f;
-    --color-sheet: #161d2b;
-    --color-ink: #e4e8f1;
-    --color-muted: #9aa5bd;
-    --color-line: #2a3447;
+    --color-paper: #0b111c;
+    --color-sheet: #121a28;
+    --color-ink: #e4e9f2;
+    --color-muted: #94a0b8;
+    --color-line: #243046;
     --color-brand: #7ea4ff;
     --color-brand-strong: #a5c0ff;
-    --color-brand-soft: #1b2a4a;
+    --color-brand-soft: #1a2846;
     --color-good: #6fd3a0;
-    --color-good-soft: #16302a;
+    --color-good-soft: #13302a;
     --color-warn: #f0c25a;
     --color-warn-soft: #33291a;
     --color-bad: #ff8a7f;
     --color-bad-soft: #3a1f1e;
+    --color-side: #080d17;
+    --color-side-raised: #111a2b;
+    --color-side-line: #1a2438;
+    --color-brand-solid: #2d5bd1;
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3);
     color-scheme: dark;
+  }
+}
+
+/*
+ * Warna sekolah (paket Enterprise): elemen pembungkus diberi style="--school-brand: #rrggbb"
+ * dan semua token brand diturunkan dari warna itu, sehingga tombol, tautan, dan menu aktif ikut berubah.
+ */
+.brand-scope {
+  --color-brand-solid: var(--school-brand);
+  --color-brand: var(--school-brand);
+  --color-brand-strong: color-mix(in oklab, var(--school-brand) 78%, black);
+  --color-brand-soft: color-mix(in oklab, var(--school-brand) 10%, white);
+}
+@media (prefers-color-scheme: dark) {
+  .brand-scope {
+    --color-brand: color-mix(in oklab, var(--school-brand) 55%, white);
+    --color-brand-strong: color-mix(in oklab, var(--school-brand) 35%, white);
+    --color-brand-soft: color-mix(in oklab, var(--school-brand) 22%, #121a28);
   }
 }
 

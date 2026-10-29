@@ -102,7 +102,11 @@ class _RoleShellState extends State<RoleShell> {
     final a = session.active!;
     if (_studentAppOff) {
       return Scaffold(
-        appBar: AppBar(title: Text(a.schoolName), actions: [
+        appBar: AppBar(titleSpacing: 16, title: Row(children: [
+          SchoolLogo(name: a.schoolName, url: session.logoUrl),
+          const SizedBox(width: 12),
+          Expanded(child: Text(session.appName ?? a.schoolName, overflow: TextOverflow.ellipsis)),
+        ]), actions: [
           IconButton(
             tooltip: 'Profil & ganti peran',
             icon: const Icon(Icons.account_circle_outlined),
@@ -118,9 +122,17 @@ class _RoleShellState extends State<RoleShell> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(_tabs[_index].label, style: const TextStyle(fontWeight: FontWeight.w800)),
-          Text('${roleLabel[a.role]} · ${a.schoolName}', style: const TextStyle(fontSize: 12, color: Palette.muted)),
+        titleSpacing: 16,
+        title: Row(children: [
+          SchoolLogo(name: a.schoolName, url: session.logoUrl),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(_tabs[_index].label, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18)),
+              Text('${roleLabel[a.role]} · ${session.appName ?? a.schoolName}',
+                  overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Palette.muted)),
+            ]),
+          ),
         ]),
         actions: [
           IconButton(
@@ -156,11 +168,11 @@ class _WebOnly extends StatelessWidget {
   Widget build(BuildContext context) => Column(children: [
         Container(
           width: double.infinity,
-          color: Palette.brandSoft,
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           padding: const EdgeInsets.all(12),
           child: Text(
             'Fitur ${roleLabel[session.active!.role]} tersedia lengkap di dasbor web. Di aplikasi ini Anda bisa membaca pengumuman dan notifikasi.',
-            style: const TextStyle(color: Palette.brand),
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ),
         const Expanded(child: AnnouncementsScreen()),

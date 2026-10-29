@@ -16,15 +16,19 @@ final session = AppSession();
 class SekolahApp extends StatelessWidget {
   const SekolahApp({super.key});
   @override
-  Widget build(BuildContext context) => MaterialApp(
-        title: 'SekolahApp',
-        debugShowCheckedModeBanner: false,
-        theme: buildTheme(Brightness.light),
-        darkTheme: buildTheme(Brightness.dark),
-        locale: const Locale('id'),
-        supportedLocales: const [Locale('id'), Locale('en')],
-        localizationsDelegates: GlobalMaterialLocalizations.delegates,
-        home: const AuthGate(),
+  // Tema mengikuti warna & nama aplikasi sekolah aktif (paket Enterprise).
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: session,
+        builder: (context, _) => MaterialApp(
+          title: session.appName ?? 'SekolahApp',
+          debugShowCheckedModeBanner: false,
+          theme: buildTheme(Brightness.light, brand: session.brandColor),
+          darkTheme: buildTheme(Brightness.dark, brand: session.brandColor),
+          locale: const Locale('id'),
+          supportedLocales: const [Locale('id'), Locale('en')],
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          home: const AuthGate(),
+        ),
       );
 }
 

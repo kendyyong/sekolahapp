@@ -20,20 +20,90 @@ class Palette {
   static const badSoft = Color(0xFFFBE9E7);
 }
 
-ThemeData buildTheme(Brightness b) {
-  final scheme = ColorScheme.fromSeed(seedColor: Palette.brand, brightness: b, primary: b == Brightness.light ? Palette.brand : const Color(0xFF7EA4FF), error: Palette.bad);
+/// Tema aplikasi. `brand`: warna sekolah (paket Enterprise); di mode gelap dibuat lebih terang agar terbaca.
+ThemeData buildTheme(Brightness b, {Color? brand}) {
+  final light = b == Brightness.light;
+  final seed = brand ?? Palette.brand;
+  final primary = light ? seed : (brand == null ? const Color(0xFF7EA4FF) : Color.lerp(brand, Colors.white, 0.45)!);
+  final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: b, primary: primary, error: Palette.bad);
+  final line = light ? Palette.line : const Color(0xFF243046);
+  final surface = light ? Colors.white : const Color(0xFF121A28);
   return ThemeData(
     colorScheme: scheme,
-    scaffoldBackgroundColor: b == Brightness.light ? Palette.paper : const Color(0xFF10151F),
-    appBarTheme: const AppBarTheme(centerTitle: false, scrolledUnderElevation: 0.5),
+    scaffoldBackgroundColor: light ? Palette.paper : const Color(0xFF0B111C),
+    dividerColor: line,
+    appBarTheme: AppBarTheme(
+      centerTitle: false,
+      backgroundColor: surface,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      shape: Border(bottom: BorderSide(color: line)),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: surface,
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: primary.withValues(alpha: 0.14),
+      labelTextStyle: WidgetStateProperty.resolveWith((s) => TextStyle(
+            fontSize: 12,
+            fontWeight: s.contains(WidgetState.selected) ? FontWeight.w700 : FontWeight.w500,
+          )),
+    ),
     cardTheme: CardThemeData(
       elevation: 0,
+      color: surface,
+      surfaceTintColor: Colors.transparent,
       margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: b == Brightness.light ? Palette.line : const Color(0xFF2A3447))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: line)),
     ),
-    inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder(), isDense: true),
-    filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(minimumSize: const Size(0, 46))),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: line)),
+      isDense: true,
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(0, 46),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        textStyle: const TextStyle(fontWeight: FontWeight.w700),
+      ),
+    ),
   );
+}
+
+/// Logo sekolah, atau inisial di kotak warna utama bila belum ada logo / gagal dimuat.
+class SchoolLogo extends StatelessWidget {
+  const SchoolLogo({super.key, required this.name, this.url, this.size = 36});
+  final String name;
+  final String? url;
+  final double size;
+
+  String get _initials {
+    final words = name
+        .replaceFirst(RegExp(r'^(SD|SMP|SMA|SMK|MI|MTs|MA|TK)\s+(Negeri|N|Swasta|IT|Islam)?\s*', caseSensitive: false), '')
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty && RegExp(r'^[A-Za-z0-9]').hasMatch(w));
+    final s = words.take(2).map((w) => w[0]).join().toUpperCase();
+    return s.isEmpty ? 'S' : s;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, borderRadius: BorderRadius.circular(size * 0.25)),
+      child: Text(_initials, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: size * 0.36)),
+    );
+    if (url == null) return fallback;
+    return Container(
+      width: size,
+      height: size,
+      padding: EdgeInsets.all(size * 0.08),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(size * 0.25), border: Border.all(color: Palette.line)),
+      child: Image.network(url!, fit: BoxFit.contain, errorBuilder: (_, _, _) => fallback),
+    );
+  }
 }
 
 (Color, Color) toneColors(Tone t) => switch (t) {

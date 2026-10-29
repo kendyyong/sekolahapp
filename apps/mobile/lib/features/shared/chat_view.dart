@@ -83,15 +83,15 @@ class _ChatViewState extends State<ChatView> {
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               constraints: BoxConstraints(maxWidth: MediaQuery.sizeOf(context).width * .8),
                               decoration: BoxDecoration(
-                                color: mine ? Palette.brand : Theme.of(context).colorScheme.surface,
+                                color: mine ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
                                 border: mine ? null : Border.all(color: Palette.line),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                if (!mine) Text(m['profiles']?['full_name'] ?? '', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Palette.brand)),
-                                Text(m['body'], style: TextStyle(color: mine ? Colors.white : null)),
+                                if (!mine) Text(m['profiles']?['full_name'] ?? '', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Theme.of(context).colorScheme.primary)),
+                                Text(m['body'], style: TextStyle(color: mine ? Theme.of(context).colorScheme.onPrimary : null)),
                                 const SizedBox(height: 2),
-                                Text(waktu(m['created_at']), style: TextStyle(fontSize: 11, color: mine ? Colors.white70 : Palette.muted)),
+                                Text(waktu(m['created_at']), style: TextStyle(fontSize: 11, color: mine ? Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.7) : Palette.muted)),
                               ]),
                             ),
                           );
