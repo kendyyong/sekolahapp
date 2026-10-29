@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { CalendarCheck, ScrollText, ShieldCheck, Wallet } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ACTIVE_ROLE_COOKIE, type RoleOption, type SchoolBrand } from "@/lib/session";
-import { Button, Field, Flash, Input } from "@/components/ui";
+import { Field, Flash, Input } from "@/components/ui";
+import { SubmitButton } from "@/components/submit-button";
 import { SchoolMark } from "@/components/school-mark";
 import { brandScope } from "@/lib/brand";
 
@@ -108,7 +109,7 @@ export function LoginScreen({ sp, school, from }: {
               <Input id="password" name="password" type="password" autoComplete="current-password" required />
             </Field>
             <div className="-mt-1 text-right text-sm"><Link href="/lupa-sandi" className="font-semibold text-brand">Lupa kata sandi?</Link></div>
-            <Button type="submit" className="py-2.5">Masuk</Button>
+            <SubmitButton className="py-2.5" pendingLabel="Masuk…">Masuk</SubmitButton>
           </form>
           {!school && (
             <p className="mt-8 border-t border-line pt-6 text-center text-sm text-muted">
