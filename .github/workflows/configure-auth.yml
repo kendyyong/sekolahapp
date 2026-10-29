@@ -8,7 +8,8 @@ name: Atur Auth Supabase
 #   - opsional: menjadikan satu akun Pemilik Platform
 # Rahasia repo: SUPABASE_ACCESS_TOKEN, SUPABASE_PROJECT_REF, dan SMTP_PASSWORD
 # (untuk Gmail: App Password 16 huruf dari myaccount.google.com/apppasswords).
-# Nilai lain bisa diganti lewat Variables repo: SITE_URL, SMTP_SENDER, SMTP_SENDER_NAME, SMTP_HOST, SMTP_PORT.
+# Nilai lain bisa diganti lewat Variables repo: SITE_URL, SMTP_SENDER, SMTP_SENDER_NAME, SMTP_HOST, SMTP_PORT,
+# EMAIL_RATE_LIMIT (email per jam; bawaan Supabase hanya 2, Gmail sanggup sekitar 500 per hari).
 
 on:
   workflow_dispatch:
@@ -45,6 +46,7 @@ jobs:
       SMTP_SENDER_NAME: ${{ vars.SMTP_SENDER_NAME || 'SekolahApp' }}
       SMTP_HOST: ${{ vars.SMTP_HOST || 'smtp.gmail.com' }}
       SMTP_PORT: ${{ vars.SMTP_PORT || '465' }}
+      EMAIL_RATE_LIMIT: ${{ vars.EMAIL_RATE_LIMIT || '30' }}
       MODE: ${{ inputs.mode }}
       WITH_SMTP: ${{ inputs.smtp }}
       ADMIN_EMAIL: ${{ inputs.platform_admin_email }}
@@ -83,9 +85,9 @@ jobs:
               mailer_templates_recovery_content: $rec}' > patch.json
           if [ "$WITH_SMTP" = "true" ]; then
             jq --arg host "$SMTP_HOST" --arg port "$SMTP_PORT" --arg user "$SMTP_SENDER" \
-               --arg name "$SMTP_SENDER_NAME" --arg pass "$SMTP_PASSWORD" \
+               --arg name "$SMTP_SENDER_NAME" --arg pass "$SMTP_PASSWORD" --argjson rate "$EMAIL_RATE_LIMIT" \
                '. + {smtp_host: $host, smtp_port: $port, smtp_user: $user, smtp_pass: $pass,
-                     smtp_admin_email: $user, smtp_sender_name: $name}' patch.json > p && mv p patch.json
+                     smtp_admin_email: $user, smtp_sender_name: $name, rate_limit_email_sent: $rate}' patch.json > p && mv p patch.json
           fi
           echo "Rencana perubahan (kata sandi disembunyikan):"
           jq 'del(.mailer_templates_confirmation_content, .mailer_templates_recovery_content) | if .smtp_pass then .smtp_pass = "***" else . end' patch.json
@@ -94,7 +96,7 @@ jobs:
         run: |
           curl -fsS -X PATCH -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" \
             --data @patch.json "https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth" \
-            | jq '{site_url, uri_allow_list, smtp_host, smtp_port, smtp_admin_email, smtp_sender_name,
+            | jq '{site_url, uri_allow_list, smtp_host, smtp_port, smtp_admin_email, smtp_sender_name, rate_limit_email_sent,
                    mailer_subjects_confirmation, mailer_subjects_recovery}'
       - name: Pemilik Platform
         if: inputs.mode == 'jalankan' && inputs.platform_admin_email != ''
