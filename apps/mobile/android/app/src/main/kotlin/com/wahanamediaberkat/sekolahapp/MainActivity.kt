@@ -1,4 +1,4 @@
-package id.sekolahapp.sekolahapp_mobile
+package com.wahanamediaberkat.sekolahapp
 
 import io.flutter.embedding.android.FlutterActivity
 

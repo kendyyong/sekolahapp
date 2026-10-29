@@ -166,14 +166,14 @@ Uji: buka `/lupa-sandi`, masukkan email sendiri, klik tautan di email, atur kata
 ## 5. Firebase (notifikasi push)
 
 1. [console.firebase.google.com](https://console.firebase.google.com) → buat proyek (Analytics boleh dimatikan).
-2. Tambahkan aplikasi Android dengan package `id.sekolahapp.sekolahapp_mobile`. Lihat catatan di langkah 6 sebelum memutuskan nama ini.
+2. Tambahkan aplikasi Android dengan package `com.wahanamediaberkat.sekolahapp`. Lihat catatan di langkah 6 sebelum memutuskan nama ini.
 3. Unduh `google-services.json` dan taruh di `apps/mobile/android/app/`. Tanpa berkas ini aplikasi tetap jalan, hanya tanpa push.
 4. Project settings → Service accounts → *Generate new private key*. Isi berkas JSON itu disimpan sebagai rahasia `FCM_SERVICE_ACCOUNT` (langkah 1.4).
 5. iOS (nanti): tambahkan aplikasi iOS, unggah APNs key, dan taruh `GoogleService-Info.plist` di `apps/mobile/ios/Runner/`.
 
 ## 6. Aplikasi Android & Play Store
 
-**Nama paket.** Nama paket (`applicationId`) tidak bisa diganti setelah aplikasi pertama kali diunggah ke Play Store. Saat ini nilainya `id.sekolahapp.sekolahapp_mobile`. Bila ingin memakai nama lain, misalnya `id.sekolahapp.app`, ganti sebelum unggahan pertama, di dua tempat:
+**Nama paket.** Nama paket (`applicationId`) tidak bisa diganti setelah aplikasi pertama kali diunggah ke Play Store. Saat ini nilainya `com.wahanamediaberkat.sekolahapp`. Bila ingin memakai nama lain, ganti sebelum unggahan pertama, di dua tempat (nilai ini sudah dipakai di Play Console sejak 29 Oktober 2026, jadi jangan diganti lagi):
 - `apps/mobile/android/app/build.gradle.kts`, nilai `namespace` dan `applicationId`
 - aplikasi Android di Firebase
 

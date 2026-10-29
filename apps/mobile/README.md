@@ -25,7 +25,7 @@ Akun demo (kata sandi `sekolah123`): `andi@` (murid), `ortu.andi@` (orang tua), 
 
 Edge Function `push-dispatch` mengirim notifikasi lewat FCM ke token di tabel `device_tokens`. Aplikasi mendaftarkan token otomatis setelah login bila Firebase sudah dikonfigurasi:
 
-1. Buat proyek Firebase, tambahkan aplikasi Android `id.sekolahapp.sekolahapp_mobile` dan iOS.
+1. Buat proyek Firebase, tambahkan aplikasi Android `com.wahanamediaberkat.sekolahapp` dan iOS.
 2. Jalankan `flutterfire configure` atau taruh `google-services.json` di `android/app/` dan `GoogleService-Info.plist` di `ios/Runner/`.
 3. Tanpa berkas itu aplikasi tetap berjalan; push hanya dilewati.
 

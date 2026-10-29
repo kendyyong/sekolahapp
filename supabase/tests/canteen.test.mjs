@@ -3,6 +3,9 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { freshDb, as, asService, U, S } from './helpers.mjs';
 
+// Kantin memakai tanggal Jakarta; current_date (UTC) bisa beda hari setelah pukul 17.00 UTC.
+const TODAY = `(now() at time zone 'Asia/Jakarta')::date`;
+
 const KASIR = '00000000-0000-0000-0000-0000000000a7';
 let db, stall, card;
 const one = async (uid, sql, params) => (await as(db, uid, sql, params))[0];
@@ -94,10 +97,10 @@ test('orang tua & kasir melihat riwayat sesuai haknya', async () => {
   assert.equal((await as(db, KASIR, 'select * from canteen_wallets')).length, 0);
   assert.equal((await as(db, U.guru2, 'select id from canteen_ledger')).length, 0);
   // Daftar transaksi kios untuk kasir memuat nama murid & status pembatalan.
-  const list = await as(db, KASIR, 'select * from canteen_stall_entries($1, current_date - 1, current_date)', [stall]);
+  const list = await as(db, KASIR, `select * from canteen_stall_entries($1, ${TODAY} - 1, ${TODAY})`, [stall]);
   assert.ok(list.every((r) => r.student_name === 'Andi'));
   assert.equal(list.filter((r) => r.kind === 'purchase' && r.refunded).length, 2);
-  assert.equal((await as(db, U.guru2, 'select * from canteen_stall_entries($1, current_date - 1, current_date)', [stall])).length, 0);
+  assert.equal((await as(db, U.guru2, `select * from canteen_stall_entries($1, ${TODAY} - 1, ${TODAY})`, [stall])).length, 0);
 });
 
 test('isi saldo lewat tagihan: lunas menambah saldo, refund menariknya kembali', async () => {
@@ -131,11 +134,11 @@ test('permintaan isi saldo kedaluwarsa dibatalkan tugas harian tanpa denda', asy
 });
 
 test('setoran kios mengunci transaksi dan menghitung bagi hasil', async () => {
-  await assert.rejects(as(db, KASIR, 'select canteen_settle($1, current_date)', [stall]), /Hanya Tata Usaha/);
-  const s = await one(U.tuA, `select * from canteen_settle($1, current_date, 'Setor minggu 1')`, [stall]);
+  await assert.rejects(as(db, KASIR, `select canteen_settle($1, ${TODAY})`, [stall]), /Hanya Tata Usaha/);
+  const s = await one(U.tuA, `select * from canteen_settle($1, ${TODAY}, 'Setor minggu 1')`, [stall]);
   // Penjualan bersih: 1.000 + 2.000 (lalu dibatalkan TU) + 11.000 (dibatalkan) → 1.000
   assert.deepEqual([Number(s.gross), Number(s.commission), Number(s.net)], [1000, 100, 900]);
-  await assert.rejects(as(db, U.tuA, 'select canteen_settle($1, current_date)', [stall]), /Tidak ada penjualan/);
+  await assert.rejects(as(db, U.tuA, `select canteen_settle($1, ${TODAY})`, [stall]), /Tidak ada penjualan/);
   const [{ id }] = await as(db, U.tuA, `select id from canteen_ledger where kind = 'purchase' and amount = -1000`);
   await assert.rejects(as(db, U.tuA, 'select canteen_void($1)', [id]), /sudah disetorkan/);
   assert.equal((await as(db, KASIR, 'select id from canteen_settlements')).length, 1);
