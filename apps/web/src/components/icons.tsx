@@ -1,6 +1,6 @@
 import {
   BadgePercent, Banknote, Bell, BookOpen, Building2, CalendarCheck, CalendarDays, ClipboardCheck, ClipboardList, CreditCard,
-  FileText, Fingerprint, GraduationCap, HeartHandshake, House, IdCard, Landmark, LayoutDashboard, MailOpen, MapPin, Megaphone,
+  FileText, Fingerprint, GraduationCap, Handshake, HeartHandshake, House, IdCard, Landmark, LayoutDashboard, MailOpen, MapPin, Megaphone,
   MessageCircle, MessagesSquare, NotebookPen, NotebookText, Receipt, School, ScanLine, ScrollText, Settings, ShieldCheck, Sprout, Tags,
   Store, TriangleAlert, Timer, UserCheck, UserCog, UserPlus, Users, UsersRound, UtensilsCrossed, Video, Wallet, type LucideIcon,
 } from "lucide-react";
@@ -9,7 +9,7 @@ import {
 export const ICONS = {
   alert: TriangleAlert, banknote: Banknote, bell: Bell, book: BookOpen, building: Building2, calendar: CalendarDays, calendarCheck: CalendarCheck,
   card: CreditCard, clipboardCheck: ClipboardCheck, clipboardList: ClipboardList, dashboard: LayoutDashboard,
-  fileText: FileText, fingerprint: Fingerprint, graduation: GraduationCap, heart: HeartHandshake, home: House, idCard: IdCard, landmark: Landmark,
+  fileText: FileText, fingerprint: Fingerprint, graduation: GraduationCap, handshake: Handshake, heart: HeartHandshake, home: House, idCard: IdCard, landmark: Landmark,
   mailOpen: MailOpen, mapPin: MapPin, megaphone: Megaphone, messages: MessagesSquare, whatsapp: MessageCircle, notebookPen: NotebookPen,
   notebookText: NotebookText, percent: BadgePercent, receipt: Receipt, scan: ScanLine, school: School, scroll: ScrollText,
   settings: Settings, shield: ShieldCheck, sprout: Sprout, tags: Tags, userCheck: UserCheck, userCog: UserCog, userPlus: UserPlus, users: Users,

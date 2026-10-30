@@ -115,6 +115,11 @@ export const PLATFORM_NAV: NavItem[] = [
   { href: "/platform", label: "Ringkasan", icon: "shield", group: "Pemilik Platform" },
   { href: "/platform/sekolah", label: "Sekolah & Paket", icon: "school" },
   { href: "/platform/tagihan", label: "Tagihan Langganan", icon: "receipt" },
+  { href: "/platform/afiliasi", label: "Affiliator", icon: "handshake" },
+];
+
+export const AFFILIATE_NAV: NavItem[] = [
+  { href: "/afiliasi", label: "Program Affiliator", icon: "handshake", group: "Kemitraan" },
 ];
 
 export function foundationNav(foundations: { id: string; name: string }[]): NavItem[] {

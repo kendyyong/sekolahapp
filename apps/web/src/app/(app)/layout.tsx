@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Bell, ChevronsUpDown, LogOut } from "lucide-react";
 import { getSession, ROLE_LABEL } from "@/lib/session";
-import { NAV, PLATFORM_NAV, foundationNav, visibleNav, withGroups, type NavItem } from "@/lib/nav";
+import { AFFILIATE_NAV, NAV, PLATFORM_NAV, foundationNav, visibleNav, withGroups, type NavItem } from "@/lib/nav";
 import { NavLinks } from "@/components/nav-links";
 import { AppShell } from "@/components/app-shell";
 import { SchoolMark } from "@/components/school-mark";
@@ -30,9 +30,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const nav = active ? visibleNav(NAV[active.role], modules) : [];
   const platform = scopes.platform ? PLATFORM_NAV : [];
   const foundation = scopes.foundations.length ? foundationNav(scopes.foundations) : [];
+  const affiliate = scopes.affiliate ? AFFILIATE_NAV : [];
   const fallback: NavItem[] = !roles.length && !scopes.platform && !scopes.foundations.length
-    ? [{ href: "/sekolah-baru", label: "Daftarkan sekolah", icon: "school", group: "Mulai" }] : [];
-  const allNav = [...nav, ...platform, ...foundation, ...fallback];
+    ? [{ href: "/sekolah-baru", label: "Daftarkan sekolah", icon: "school", group: "Mulai" },
+       ...(scopes.affiliate ? [] : [{ href: "/afiliasi", label: "Jadi affiliator", icon: "handshake" as const }])] : [];
+  const allNav = [...nav, ...platform, ...foundation, ...affiliate, ...fallback];
   // Sekolah yang mematikan aplikasi murid: akun murid hanya melihat pemberitahuan.
   const studentAppOff = active?.role === "student"
     && (await supabase.rpc("student_app_mode", { p_school: active.school_id })).data === "off";
@@ -95,7 +97,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </span>
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold text-side-ink">{name}</span>
-              <span className="block truncate text-xs text-side-muted">{active ? ROLE_LABEL[active.role] : scopes.platform ? "Pemilik platform" : "Akun"}</span>
+              <span className="block truncate text-xs text-side-muted">{active ? ROLE_LABEL[active.role] : scopes.platform ? "Pemilik platform" : scopes.affiliate ? "Affiliator" : "Akun"}</span>
             </span>
           </Link>
           <form action={signOut}>

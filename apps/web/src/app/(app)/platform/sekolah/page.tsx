@@ -38,6 +38,14 @@ async function savePayment(fd: FormData) {
   }));
 }
 
+async function setAffiliate(fd: FormData) {
+  "use server";
+  await requirePlatform();
+  const id = str(fd, "id");
+  await run(`/platform/sekolah?id=${id}`, "Affiliator sekolah disimpan.", (sb) =>
+    sb.rpc("set_school_affiliate", { p_school: id, p_code: optStr(fd, "code") }));
+}
+
 async function addFoundationAdmin(fd: FormData) {
   "use server";
   await requirePlatform();
@@ -60,11 +68,12 @@ export default async function PlatformSchools({ searchParams }: { searchParams: 
   const list = ((rows ?? []) as any[]).filter((s) =>
     (!q || `${s.name} ${s.npsn ?? ""} ${s.admin_email ?? ""}`.toLowerCase().includes(q)) && (!sp.paket || s.plan === sp.paket));
   const sel = ((rows ?? []) as any[]).find((s) => s.id === sp.id);
-  const [{ data: detail }, { data: account }, { data: fAdmins }] = sel ? await Promise.all([
+  const [{ data: detail }, { data: account }, { data: fAdmins }, { data: referral }] = sel ? await Promise.all([
     supabase.from("schools").select("foundation_id, settings, address, phone").eq("id", sel.id).single(),
     supabase.from("school_payment_accounts").select("sub_account_id, status, service_fee_bearer").eq("school_id", sel.id).maybeSingle(),
     supabase.from("schools").select("foundation_id, foundations(foundation_admins(profiles(full_name, email)))").eq("id", sel.id).single(),
-  ]) : [{ data: null }, { data: null }, { data: null }];
+    supabase.from("affiliate_referrals").select("created_at, affiliates(code)").eq("school_id", sel.id).maybeSingle(),
+  ]) : [{ data: null }, { data: null }, { data: null }, { data: null }];
   const admins = ((fAdmins as any)?.foundations?.foundation_admins ?? []).map((a: any) => a.profiles);
 
   return (
@@ -130,6 +139,15 @@ export default async function PlatformSchools({ searchParams }: { searchParams: 
                 </Field>
                 <Field label="Atau buat yayasan baru"><Input name="new_foundation" placeholder="Nama yayasan" /></Field>
                 <SubmitButton>Simpan</SubmitButton>
+              </form>
+            </Card>
+            <Card title="Affiliator">
+              <form action={setAffiliate} className="flex flex-col gap-3">
+                <input type="hidden" name="id" value={sel.id} />
+                <Field label="Kode affiliator" hint="Kosongkan untuk melepas. Masa komisi dihitung dari tanggal sekolah terdaftar.">
+                  <Input name="code" defaultValue={(referral as any)?.affiliates?.code ?? ""} placeholder="Tanpa affiliator" />
+                </Field>
+                <SubmitButton variant="secondary">Simpan affiliator</SubmitButton>
               </form>
             </Card>
             <Card title="Akun pembayaran (Xendit)">
