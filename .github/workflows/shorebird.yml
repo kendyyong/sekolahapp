@@ -78,6 +78,17 @@ jobs:
         with:
           cache: true
 
+      # Shorebird butuh android/gradlew, yang tidak disimpan di git; --config-only membuatnya tanpa build.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.8
+          channel: stable
+          cache: true
+      - name: Siapkan berkas Gradle
+        run: |
+          flutter pub get
+          flutter build apk --config-only
+
       - name: Daftarkan aplikasi
         if: inputs.aksi == 'init'
         run: |
