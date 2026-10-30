@@ -72,6 +72,7 @@ flutter:
   # logo-putih.png: logo di halaman masuk. latar-masuk.jpg (opsional): foto latar halaman masuk.
   assets:
     - assets/images/
+    - shorebird.yaml
 
   # To add assets to your application, add an assets section, like this:
   # assets:
