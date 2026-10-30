@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/session";
 import { Card, PageHeader, Stat } from "@/components/ui";
+import { AgendaCard } from "@/components/agenda-card";
 
 export default async function AdminHome() {
   const { supabase, schoolId, active } = await requireRole("school_admin");
@@ -32,6 +33,7 @@ export default async function AdminHome() {
         <Stat label="Orang tua" value={count("guardian")} />
         <Stat label="Paket" value={plan?.name ?? "–"} hint={plan?.price_per_student ? `Rp${Number(plan.price_per_student).toLocaleString("id-ID")}/siswa/bulan` : "Tanpa biaya"} />
       </div>
+      <div className="grid gap-6 lg:grid-cols-2">
       <Card title="Langkah penyiapan">
         <ol className="flex flex-col gap-2">
           {steps.map((s, i) => (
@@ -45,6 +47,8 @@ export default async function AdminHome() {
           ))}
         </ol>
       </Card>
+      <AgendaCard supabase={supabase} schoolId={schoolId} />
+      </div>
     </>
   );
 }

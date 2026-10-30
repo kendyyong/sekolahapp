@@ -4,6 +4,7 @@ import { rupiah, tanggal, todayJakarta, waktu } from "@/lib/format";
 import { myChildren } from "@/lib/queries";
 import { Badge, Card, Empty, LinkButton, PageHeader, Stat, StatusBadge } from "@/components/ui";
 import { ChildTabs, pickChild } from "./child-tabs";
+import { AgendaCard } from "@/components/agenda-card";
 
 const jamOf = (ts: string) => new Date(ts).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Jakarta" });
 
@@ -107,6 +108,7 @@ export default async function GuardianHome({ searchParams }: { searchParams: Pro
             </ul>
           )}
         </Card>
+        <AgendaCard supabase={supabase} schoolId={schoolId} />
         <Card title="Pengumuman sekolah" actions={<Link href="/pengumuman" className="text-sm font-semibold text-brand">Semua</Link>}>
           {!news?.length ? <Empty>Belum ada pengumuman.</Empty> : (
             <ul className="divide-y divide-line">

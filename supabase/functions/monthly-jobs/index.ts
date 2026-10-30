@@ -3,6 +3,7 @@
 //  - tanggal 1: hitung tagihan langganan platform bulan lalu
 //  - setiap hari: batalkan permintaan isi saldo kantin yang tidak dibayar, terapkan denda
 //    keterlambatan, kirim pengingat jatuh tempo (H-3, H, H+7)
+//  - setiap hari: pengingat H-1 agenda kalender pendidikan
 //
 // POST /functions/v1/monthly-jobs   header: x-cron-secret: <CRON_SECRET>
 // Body opsional: { "date": "2026-11-01" } untuk menjalankan ulang tanggal tertentu.
@@ -49,6 +50,8 @@ serve(async (req) => {
       r.canteen_topups_expired = expired;
       const { data: late } = await admin.rpc("apply_late_fees", { p_school: s.id });
       r.late_fees = late;
+      const { data: agenda } = await admin.rpc("calendar_send_reminders", { p_school: s.id, p_date: today });
+      r.calendar_reminders = agenda;
 
       // Pengingat jatuh tempo.
       for (const [offset, label] of [[3, "3 hari lagi"], [0, "hari ini"], [-7, "lewat 7 hari"]] as const) {

@@ -5,6 +5,7 @@ import '../../app.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import '../shared/calendar_screen.dart';
 import 'card_kiosk.dart';
 
 /// Murid di kelas perwalian guru ini (tahun ajaran aktif).
@@ -85,6 +86,7 @@ class TeacherHome extends StatelessWidget {
                         ),
                     ]),
             ),
+            const AgendaSection(),
             const Text('Membuat tugas, menilai, dan verifikasi kelompok tersedia di dasbor web.', style: TextStyle(fontSize: 12, color: Palette.muted), textAlign: TextAlign.center),
           ]);
         },

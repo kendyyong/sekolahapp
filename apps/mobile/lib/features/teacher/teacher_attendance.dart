@@ -6,6 +6,7 @@ import '../../core/data.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import '../shared/calendar_screen.dart';
 
 const _statuses = ['hadir', 'terlambat', 'izin', 'sakit', 'alpa'];
 const _method = {'qr': 'absen sendiri', 'geo': 'absen sendiri + lokasi', 'leave': 'surat izin'};
@@ -31,8 +32,9 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
       classRoster(_classId!),
       sb.from('student_attendance').select('student_id, status, method').eq('class_id', _classId!).eq('date', _date).isFilter('teaching_assignment_id', null),
       sb.from('classes').select('qr_secret, name').eq('id', _classId!).single(),
+      schoolHoliday(_date),
     ]);
-    return {'classes': classes, 'roster': r[0], 'att': {for (final a in r[1] as List) a['student_id']: a}, 'class': r[2]};
+    return {'classes': classes, 'roster': r[0], 'att': {for (final a in r[1] as List) a['student_id']: a}, 'class': r[2], 'holiday': r[3]};
   }
 
   void _reload() => setState(() {
@@ -89,6 +91,7 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
           if (_classId == null) return ListView(children: const [EmptyState('Anda belum mengajar kelas mana pun.')]);
           final roster = d['roster'] as List;
           final att = d['att'] as Map;
+          final holiday = d['holiday'] as String?;
           return Column(children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -116,6 +119,14 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
                 Text('${att.length}/${roster.length} tercatat', style: const TextStyle(color: Palette.muted)),
               ]),
             ),
+            if (holiday != null)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Palette.badSoft, borderRadius: BorderRadius.circular(10)),
+                child: Text('Hari ini libur: $holiday. Absensi murid tidak dicatat.', style: const TextStyle(color: Palette.bad, fontWeight: FontWeight.w600)),
+              ),
             Expanded(
               child: ListView.separated(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -153,9 +164,9 @@ class _TeacherAttendanceState extends State<TeacherAttendance> {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: Row(children: [
-                  Expanded(child: OutlinedButton(onPressed: _close, child: const Text('Tutup hari ini'))),
+                  Expanded(child: OutlinedButton(onPressed: holiday != null ? null : _close, child: const Text('Tutup hari ini'))),
                   const SizedBox(width: 8),
-                  Expanded(child: FilledButton(onPressed: _changes.isEmpty ? null : _save, child: Text('Simpan (${_changes.length})'))),
+                  Expanded(child: FilledButton(onPressed: _changes.isEmpty || holiday != null ? null : _save, child: Text('Simpan (${_changes.length})'))),
                 ]),
               ),
             ),

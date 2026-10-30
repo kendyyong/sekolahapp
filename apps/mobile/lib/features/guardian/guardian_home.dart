@@ -4,6 +4,7 @@ import '../../core/data.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import '../shared/calendar_screen.dart';
 import '../shared/canteen_section.dart';
 import '../shared/report_screens.dart';
 import 'children.dart';
@@ -100,6 +101,7 @@ class GuardianHome extends StatelessWidget {
                     ? const EmptyState('Tidak ada tugas dalam sepekan ini.')
                     : Column(children: [for (final t in d['tasks'] as List) _TaskTile(t)]),
               ),
+              const AgendaSection(),
               ReportsSection(studentId: c.id, studentName: c.fullName),
               CanteenSection(studentId: c.id, guardian: true),
               Section(

@@ -8,6 +8,7 @@ import type { IconName } from "@/components/icons";
 export interface NavItem { href: string; label: string; icon?: IconName; module?: Module; group?: string }
 
 const announcements: NavItem = { href: "/pengumuman", label: "Pengumuman", icon: "megaphone" };
+const calendar: NavItem = { href: "/kalender", label: "Kalender Pendidikan", icon: "calendarRange" };
 const staffSelf: NavItem[] = [
   { href: "/pegawai", label: "Absen & Cuti Saya", icon: "fingerprint", module: "staff", group: "Kepegawaian" },
   { href: "/pegawai/arahan", label: "Arahan Kepsek", icon: "clipboardList", module: "staff" },
@@ -19,6 +20,7 @@ export const NAV: Record<Role, NavItem[]> = {
   school_admin: [
     { href: "/admin", label: "Ringkasan", icon: "dashboard", group: "Utama" },
     { href: "/admin/kelas", label: "Kelas & Tahun Ajaran", icon: "school", group: "Akademik" },
+    { ...calendar },
     { href: "/admin/mapel", label: "Mapel & Pengajar", icon: "book" },
     { href: "/admin/murid", label: "Data Murid", icon: "users" },
     { href: "/admin/rapor", label: "E-Rapor", icon: "scroll", module: "grades" },
@@ -37,6 +39,7 @@ export const NAV: Record<Role, NavItem[]> = {
   ],
   principal: [
     { href: "/kepsek", label: "Dasbor", icon: "dashboard", module: "dashboard", group: "Utama" },
+    { ...calendar },
     { href: "/admin/rapor", label: "E-Rapor", icon: "scroll", module: "grades" },
     { href: "/kokurikuler", label: "Kokurikuler & P5", icon: "sprout", module: "grades" },
     { href: "/admin/ppdb", label: "PPDB Online", icon: "userPlus", module: "ppdb" },
@@ -48,6 +51,7 @@ export const NAV: Record<Role, NavItem[]> = {
   ],
   teacher: [
     { href: "/guru", label: "Hari Ini", icon: "calendar", group: "Utama" },
+    { ...calendar },
     { href: "/guru/absensi", label: "Absensi Kelas", icon: "clipboardCheck", group: "Pembelajaran" },
     { href: "/guru/tugas", label: "Tugas & PR", icon: "notebookPen" },
     { href: "/guru/ujian", label: "Ujian Online", icon: "timer", module: "cbt" },
@@ -66,6 +70,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/bk", label: "Murid Perlu Perhatian", icon: "heart", module: "counseling", group: "Bimbingan Konseling" },
     { href: "/bk/catatan", label: "Catatan Konseling", icon: "notebookText", module: "counseling" },
     { ...announcements, group: "Komunikasi" },
+    { ...calendar },
     ...staffSelf,
   ],
   finance: [
@@ -80,6 +85,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { ...payroll, group: "Kepegawaian" },
     { href: "/kios", label: "Kios Absen", icon: "scan", group: "Operasional" },
     { ...announcements },
+    { ...calendar },
     ...staffSelf.map((i) => (i.group ? { ...i, group: "Data Saya" } : i)),
   ],
   canteen: [
@@ -87,11 +93,13 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/kantin/menu", label: "Menu Kios", icon: "utensils", module: "canteen" },
     { href: "/kantin/penjualan", label: "Penjualan & Setoran", icon: "receipt", module: "canteen" },
     { ...announcements, group: "Informasi" },
+    { ...calendar },
     { href: "/pegawai/gaji", label: "Slip Gaji", icon: "fileText", module: "payroll" },
   ],
   student: [
     { href: "/murid", label: "Beranda", icon: "home", group: "Utama" },
     { href: "/murid/absen", label: "Absen", icon: "mapPin" },
+    { ...calendar },
     { href: "/murid/tugas", label: "Tugas & PR", icon: "notebookPen", group: "Belajar" },
     { href: "/murid/ujian", label: "Ujian Online", icon: "timer", module: "cbt" },
     { href: "/murid/kelompok", label: "Kelompok Kerja", icon: "usersRound" },
@@ -103,6 +111,7 @@ export const NAV: Record<Role, NavItem[]> = {
   guardian: [
     { href: "/ortu", label: "Anak Saya", icon: "users", group: "Utama" },
     { href: "/ortu/rapor", label: "Rapor", icon: "scroll", module: "grades" },
+    { ...calendar },
     { href: "/ortu/izin", label: "Pengajuan Izin", icon: "mailOpen", group: "Layanan" },
     { href: "/ortu/tagihan", label: "Tagihan & Bayar", icon: "receipt", module: "finance" },
     { href: "/ortu/kantin", label: "Saldo Kantin", icon: "utensils", module: "canteen" },

@@ -45,7 +45,7 @@ List<_Tab> _tabsFor(String role) => switch (role) {
           _Tab('Izin', Icons.sick_outlined, GuardianLeave()),
           _Tab('Tagihan', Icons.payments_outlined, GuardianInvoices(), module: 'finance'),
           _Tab('Pesan', Icons.chat_bubble_outline, GuardianMessages()),
-          _Tab('Info', Icons.campaign_outlined, AnnouncementsScreen()),
+          _Tab('Info', Icons.campaign_outlined, InfoScreen()),
         ],
       'teacher' => const [
           _Tab('Beranda', Icons.home_outlined, TeacherHome()),
@@ -171,10 +171,10 @@ class _WebOnly extends StatelessWidget {
           color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
           padding: const EdgeInsets.all(12),
           child: Text(
-            'Fitur ${roleLabel[session.active!.role]} tersedia lengkap di dasbor web. Di aplikasi ini Anda bisa membaca pengumuman dan notifikasi.',
+            'Fitur ${roleLabel[session.active!.role]} tersedia lengkap di dasbor web. Di aplikasi ini Anda bisa membaca pengumuman, kalender pendidikan, dan notifikasi.',
             style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ),
-        const Expanded(child: AnnouncementsScreen()),
+        const Expanded(child: InfoScreen()),
       ]);
 }
