@@ -78,6 +78,17 @@ jobs:
         with:
           cache: true
 
+      # Shorebird butuh android/gradlew, yang tidak disimpan di git; --config-only membuatnya tanpa build.
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.8
+          channel: stable
+          cache: true
+      - name: Siapkan berkas Gradle
+        run: |
+          flutter pub get
+          flutter build apk --config-only
+
       - name: Daftarkan aplikasi
         if: inputs.aksi == 'init'
         run: |
@@ -108,15 +119,17 @@ jobs:
             echo "keyPassword=$KEY_PASSWORD"
           } > android/key.properties
 
-      # versionCode wajib naik di setiap unggahan; nomor run workflow selalu bertambah.
+      # versionCode wajib naik di setiap unggahan. Nomor run workflow ini dimulai dari 1, padahal Play Console
+      # sudah menerima build 4 dari workflow rilis biasa, jadi ditambah 100.
       - name: Rilis lewat Shorebird
         if: inputs.aksi == 'rilis'
         env:
           VERSI: ${{ inputs.versi }}
-          NOMOR: ${{ github.run_number }}
+          RUN: ${{ github.run_number }}
           SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
         run: |
+          NOMOR=$((RUN + 100))
           shorebird release android --flutter-version="$SHOREBIRD_FLUTTER" \
             --dart-define=SUPABASE_URL="$SUPABASE_URL" \
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
@@ -141,6 +154,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: inputs.aksi == 'rilis'
         with:
-          name: sekolahapp-${{ inputs.versi }}-${{ github.run_number }}-shorebird-aab
+          name: sekolahapp-${{ inputs.versi }}-shorebird-run${{ github.run_number }}-aab
           path: apps/mobile/build/app/outputs/bundle/release/app-release.aab
           retention-days: 30
