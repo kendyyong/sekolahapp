@@ -78,6 +78,23 @@ jobs:
         with:
           cache: true
 
+      # Kunci dipasang sebelum Gradle pertama kali jalan, agar build rilis tidak jatuh ke kunci debug.
+      - name: Pasang kunci rilis
+        if: inputs.aksi != 'init'
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
+          {
+            echo "storeFile=upload-keystore.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+
       # Shorebird butuh android/gradlew, yang tidak disimpan di git; --config-only membuatnya tanpa build.
       - uses: subosito/flutter-action@v2
         with:
@@ -103,22 +120,6 @@ jobs:
           cat shorebird.yaml
           git diff -- pubspec.yaml
 
-      - name: Pasang kunci rilis
-        if: inputs.aksi != 'init'
-        env:
-          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          echo "$KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
-          {
-            echo "storeFile=upload-keystore.jks"
-            echo "storePassword=$STORE_PASSWORD"
-            echo "keyAlias=$KEY_ALIAS"
-            echo "keyPassword=$KEY_PASSWORD"
-          } > android/key.properties
-
       # versionCode wajib naik di setiap unggahan. Nomor run workflow ini dimulai dari 1, padahal Play Console
       # sudah menerima build 4 dari workflow rilis biasa, jadi ditambah 100.
       - name: Rilis lewat Shorebird
@@ -135,6 +136,24 @@ jobs:
             --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
             -- --build-name="$VERSI" --build-number="$NOMOR"
           echo "Versi rilis untuk patch: **$VERSI+$NOMOR**. Unggah AAB dari artifact run ini ke Play Console." >> "$GITHUB_STEP_SUMMARY"
+
+      # Play Console hanya menerima AAB yang ditandatangani kunci unggah yang terdaftar (SHA-1 di bawah,
+      # bukan rahasia). Gagal di sini lebih baik daripada ditolak saat unggah.
+      - name: Pastikan AAB ditandatangani kunci unggah
+        if: inputs.aksi == 'rilis'
+        env:
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          SHA1_PLAY: 61:FD:56:19:D7:51:84:CA:1F:9F:59:53:8A:14:2C:D4:6E:72:BB:6C
+        run: |
+          sha1() { grep -m1 -oE 'SHA1: *[0-9A-F:]+' | sed 's/SHA1: *//'; }
+          KUNCI=$(keytool -list -v -keystore android/app/upload-keystore.jks -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" | sha1)
+          AAB=$(keytool -printcert -jarfile build/app/outputs/bundle/release/app-release.aab | sha1)
+          echo "SHA-1 keystore: $KUNCI"
+          echo "SHA-1 AAB:      $AAB"
+          echo "SHA-1 Play:     $SHA1_PLAY"
+          [ "$AAB" = "$KUNCI" ] || { echo "::error::AAB tidak ditandatangani keystore rilis (kemungkinan kunci debug)"; exit 1; }
+          [ "$AAB" = "$SHA1_PLAY" ] || { echo "::error::Keystore di secret berbeda dari kunci unggah yang terdaftar di Play Console"; exit 1; }
 
       # dart-define harus sama dengan saat rilis agar patch terhubung ke server yang sama.
       - name: Kirim patch
