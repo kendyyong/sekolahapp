@@ -23,7 +23,7 @@ async function signUp(fd: FormData) {
   const email = String(fd.get("email") ?? "").trim();
   const password = String(fd.get("password") ?? "");
   const draft = schoolDraftFrom(fd);
-  const back = (err: string) => redirect("/daftar?err=" + encodeURIComponent(err));
+  const back = (err: string) => redirect("/daftar?err=" + encodeURIComponent(err) + (draft.ref ? "&ref=" + encodeURIComponent(draft.ref) : ""));
   if (password.length < 8) back("Kata sandi minimal 8 karakter.");
 
   const { data, error } = await sb.auth.signUp({
@@ -39,8 +39,10 @@ async function signUp(fd: FormData) {
   redirect("/admin?ok=" + encodeURIComponent(WELCOME));
 }
 
-export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ err?: string; ok?: string }> }) {
+export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ err?: string; ok?: string; ref?: string }> }) {
   const sp = await searchParams;
+  // Tautan referral affiliator: /daftar?ref=KODE
+  const ref = /^[A-Za-z0-9]{4,12}$/.test(sp.ref ?? "") ? sp.ref!.toUpperCase() : undefined;
   return (
     <main className="min-h-screen px-4 py-10">
       <div className="mx-auto w-full max-w-lg">
@@ -58,7 +60,7 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
           </fieldset>
           <fieldset className="flex flex-col gap-4 border-t border-line pt-4">
             <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-muted">Sekolah</legend>
-            <SchoolFields />
+            <SchoolFields draft={{ ref }} />
           </fieldset>
           {/* Pesan galat diletakkan dekat tombol agar terlihat tanpa menggulir ke atas. */}
           <div className="-mb-3 mt-2 empty:hidden"><Flash searchParams={sp} /></div>

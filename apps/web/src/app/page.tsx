@@ -161,6 +161,7 @@ export default async function Landing() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-sm text-muted">
           <span>© {new Date().getFullYear()} SekolahApp</span>
           <nav className="flex gap-4">
+            <Link href="/mitra" className="hover:text-ink">Program Affiliator</Link>
             <Link href="/privasi" className="hover:text-ink">Kebijakan Privasi</Link>
             <Link href="/syarat" className="hover:text-ink">Syarat Layanan</Link>
             <Link href="/hapus-akun" className="hover:text-ink">Hapus akun</Link>

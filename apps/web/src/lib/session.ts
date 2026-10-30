@@ -49,7 +49,8 @@ export const MODULE_LABEL: Record<Module, string> = {
   payroll: "Penggajian guru & staf",
 };
 
-export interface AdminScopes { platform: boolean; foundations: { id: string; name: string }[] }
+export type AffiliateStatus = "pending" | "active" | "suspended" | "rejected";
+export interface AdminScopes { platform: boolean; foundations: { id: string; name: string }[]; affiliate: AffiliateStatus | null }
 
 /** Merek sekolah aktif; brand_color & app_name hanya terisi bila paketnya memuat whitelabel. */
 export interface SchoolBrand {
@@ -69,7 +70,7 @@ export const getSession = cache(async () => {
     supabase.rpc("my_roles"),
     supabase.rpc("my_admin_scopes"),
   ]);
-  const scopes = (scopeData ?? { platform: false, foundations: [] }) as AdminScopes;
+  const scopes = (scopeData ?? { platform: false, foundations: [], affiliate: null }) as AdminScopes;
   const options = (roles ?? []) as RoleOption[];
 
   const raw = (await cookies()).get(ACTIVE_ROLE_COOKIE)?.value;

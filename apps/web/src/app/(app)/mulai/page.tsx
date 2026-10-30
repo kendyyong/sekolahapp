@@ -13,5 +13,6 @@ export default async function Start() {
   if (typeof ppdb === "string" && /^[a-z0-9-]{3,60}$/.test(ppdb)) redirect(`/ppdb/${ppdb}/formulir`);
   if (scopes.platform) redirect("/platform");
   if (scopes.foundations.length) redirect("/yayasan");
+  if (scopes.affiliate || user.user_metadata?.pending_affiliate) redirect("/afiliasi");
   redirect("/tanpa-peran");
 }
