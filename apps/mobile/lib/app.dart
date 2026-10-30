@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide Session;
+import 'package:url_launcher/url_launcher.dart';
 
 import 'core/push.dart';
 import 'core/session.dart';
@@ -12,6 +13,9 @@ import 'features/login_screen.dart';
 import 'features/role_shell.dart';
 
 final session = AppSession();
+
+/// Alamat dasbor web (untuk peran yang dikelola di web).
+const webUrl = String.fromEnvironment('WEB_URL', defaultValue: 'https://sekolahapp.wahanamediaberkat.com');
 
 class SekolahApp extends StatelessWidget {
   const SekolahApp({super.key});
@@ -76,7 +80,18 @@ class _AuthGateState extends State<AuthGate> {
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const EmptyState('Akun Anda belum memiliki peran di sekolah mana pun. Hubungi admin sekolah.', icon: Icons.lock_outline),
+              if (session.platformAdmin) ...[
+                const EmptyState(
+                  'Anda masuk sebagai Super Admin. Pengelolaan sekolah, paket, dan pembayaran ada di dasbor web; aplikasi HP dipakai murid, orang tua, dan guru.',
+                  icon: Icons.admin_panel_settings_outlined,
+                ),
+                FilledButton.icon(
+                  onPressed: () => launchUrl(Uri.parse('$webUrl/platform'), mode: LaunchMode.externalApplication),
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Buka dasbor web'),
+                ),
+              ] else
+                const EmptyState('Akun Anda belum memiliki peran di sekolah mana pun. Hubungi admin sekolah.', icon: Icons.lock_outline),
               TextButton(onPressed: session.signOut, child: const Text('Keluar')),
             ]),
           ),

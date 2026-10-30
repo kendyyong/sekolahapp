@@ -37,6 +37,9 @@ class AppSession extends ChangeNotifier {
   RoleOption? active;
   bool loading = false;
 
+  /// Super admin platform; dasbornya hanya ada di web.
+  bool platformAdmin = false;
+
   /// Modul paket langganan sekolah aktif (core, staff, finance, …).
   Set<String> modules = {};
 
@@ -61,11 +64,13 @@ class AppSession extends ChangeNotifier {
       final results = await Future.wait<dynamic>([
         sb.from('profiles').select('id, full_name, email, phone, avatar_url').eq('id', userId).single(),
         sb.rpc('my_roles'),
+        sb.rpc('is_platform_admin'),
       ]);
       profile = results[0] as Map<String, dynamic>;
       roles = (results[1] as List)
           .map((r) => RoleOption(r['school_id'] as String, r['school_name'] as String, r['role'] as String))
           .toList();
+      platformAdmin = results[2] == true;
       final saved = (await SharedPreferences.getInstance()).getString(_prefKey);
       active = roles.where((r) => r.key == saved).firstOrNull ??
           roles.where((r) => mobileRoles.contains(r.role)).firstOrNull ??
@@ -104,6 +109,7 @@ class AppSession extends ChangeNotifier {
     profile = null;
     roles = [];
     active = null;
+    platformAdmin = false;
     modules = {};
     brand = null;
     notifyListeners();
