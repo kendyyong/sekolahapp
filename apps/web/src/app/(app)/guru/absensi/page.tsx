@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireRole } from "@/lib/session";
 import { run, str } from "@/lib/actions";
 import { tanggal, todayJakarta } from "@/lib/format";
@@ -41,6 +42,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
     : { data: [] };
   const byStudent = new Map((att ?? []).map((a) => [a.student_id, a]));
   const { data: qr } = classId ? await supabase.from("classes").select("qr_secret, name").eq("id", classId).single() : { data: null };
+  const { data: holiday } = await supabase.rpc("school_holiday", { p_school: schoolId, p_date: date });
 
   return (
     <>
@@ -57,6 +59,11 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
         {classId && <DownloadLink href={`/unduh/absensi-kelas?kelas=${classId}&bulan=${date.slice(0, 7)}`}>Rekap bulan ini (Excel)</DownloadLink>}
       </form>
 
+      {holiday && (
+        <p className="mb-5 rounded-lg border border-bad/20 bg-bad-soft px-4 py-3 text-sm text-bad">
+          {tanggal(date)} adalah hari libur menurut <Link href="/kalender" className="font-semibold underline">kalender pendidikan</Link>: <b>{holiday}</b>. Absensi murid tidak dicatat dan tidak perlu ditutup.
+        </p>
+      )}
       {!classId ? <Empty>Anda belum mengajar kelas mana pun.</Empty> : (
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
           <form action={saveAttendance} className="min-w-0">
@@ -81,7 +88,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
                 );
               })}
             </Table>
-            <div className="mt-3 flex gap-2"><SubmitButton>Simpan absensi</SubmitButton></div>
+            <div className="mt-3 flex gap-2"><SubmitButton disabled={!!holiday}>Simpan absensi</SubmitButton></div>
           </form>
 
           <div className="flex flex-col gap-4">
@@ -94,7 +101,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: P
               <form action={closeDay}>
                 <input type="hidden" name="class_id" value={classId} />
                 <input type="hidden" name="date" value={date} />
-                <SubmitButton variant="danger">Tutup absensi hari ini</SubmitButton>
+                <SubmitButton variant="danger" disabled={!!holiday}>Tutup absensi hari ini</SubmitButton>
               </form>
             </Card>
           </div>

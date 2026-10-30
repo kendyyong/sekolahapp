@@ -4,6 +4,7 @@ import '../../app.dart';
 import '../../core/format.dart';
 import '../../core/supa.dart';
 import '../../core/ui.dart';
+import 'calendar_screen.dart';
 
 /// Pengumuman sekolah; RLS menyaring sesuai sasaran (semua, guru, murid, orang tua, kelas).
 class AnnouncementsScreen extends StatelessWidget {
@@ -30,5 +31,19 @@ class AnnouncementsScreen extends StatelessWidget {
                     ),
                   ),
               ]),
+      );
+}
+
+/// Tab "Info": pengumuman dan kalender pendidikan.
+class InfoScreen extends StatelessWidget {
+  const InfoScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => const DefaultTabController(
+        length: 2,
+        child: Column(children: [
+          TabBar(tabs: [Tab(text: 'Pengumuman'), Tab(text: 'Kalender')]),
+          Expanded(child: TabBarView(children: [AnnouncementsScreen(), CalendarScreen()])),
+        ]),
       );
 }

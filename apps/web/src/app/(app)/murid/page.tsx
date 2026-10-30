@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/session";
 import { HARI, jam, tanggal, todayJakarta, waktu } from "@/lib/format";
 import { myStudent } from "@/lib/queries";
 import { Card, Empty, PageHeader, Stat, StatusBadge } from "@/components/ui";
+import { AgendaCard } from "@/components/agenda-card";
 
 export default async function StudentHome() {
   const { supabase, user, schoolId } = await requireRole("student");
@@ -71,6 +72,7 @@ export default async function StudentHome() {
             </ul>
           )}
         </Card>
+        <AgendaCard supabase={supabase} schoolId={schoolId} />
         {!!sessions?.length && (
           <Card title="Kelas online terjadwal">
             <ul className="divide-y divide-line">

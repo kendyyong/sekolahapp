@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/session";
 import { HARI, jam, tanggal, todayJakarta } from "@/lib/format";
 import { myTeaching } from "@/lib/queries";
 import { Card, Empty, PageHeader, Stat } from "@/components/ui";
+import { AgendaCard } from "@/components/agenda-card";
 
 export default async function TeacherHome() {
   const { supabase, user, schoolId, profile } = await requireRole("teacher");
@@ -72,6 +73,7 @@ export default async function TeacherHome() {
             </ul>
           )}
         </Card>
+        <AgendaCard supabase={supabase} schoolId={schoolId} />
       </div>
     </>
   );

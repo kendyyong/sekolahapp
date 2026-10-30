@@ -1,5 +1,5 @@
 import {
-  BadgePercent, Banknote, Bell, BookOpen, Building2, CalendarCheck, CalendarDays, ClipboardCheck, ClipboardList, CreditCard,
+  BadgePercent, Banknote, Bell, BookOpen, Building2, CalendarCheck, CalendarDays, CalendarRange, ClipboardCheck, ClipboardList, CreditCard,
   FileText, Fingerprint, GraduationCap, Handshake, HeartHandshake, House, IdCard, Landmark, LayoutDashboard, MailOpen, MapPin, Megaphone,
   MessageCircle, MessagesSquare, NotebookPen, NotebookText, Receipt, School, ScanLine, ScrollText, Settings, ShieldCheck, Sprout, Tags,
   Store, TriangleAlert, Timer, UserCheck, UserCog, UserPlus, Users, UsersRound, UtensilsCrossed, Video, Wallet, type LucideIcon,
@@ -7,7 +7,7 @@ import {
 
 /** Ikon menu dipanggil lewat nama supaya data navigasi tetap bisa dikirim dari server ke komponen klien. */
 export const ICONS = {
-  alert: TriangleAlert, banknote: Banknote, bell: Bell, book: BookOpen, building: Building2, calendar: CalendarDays, calendarCheck: CalendarCheck,
+  alert: TriangleAlert, banknote: Banknote, bell: Bell, book: BookOpen, building: Building2, calendar: CalendarDays, calendarCheck: CalendarCheck, calendarRange: CalendarRange,
   card: CreditCard, clipboardCheck: ClipboardCheck, clipboardList: ClipboardList, dashboard: LayoutDashboard,
   fileText: FileText, fingerprint: Fingerprint, graduation: GraduationCap, handshake: Handshake, heart: HeartHandshake, home: House, idCard: IdCard, landmark: Landmark,
   mailOpen: MailOpen, mapPin: MapPin, megaphone: Megaphone, messages: MessagesSquare, whatsapp: MessageCircle, notebookPen: NotebookPen,
