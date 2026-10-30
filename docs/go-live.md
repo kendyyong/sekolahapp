@@ -221,7 +221,7 @@ Perubahan sisi Android (izin baru, plugin baru, ikon, versi Flutter) tetap butuh
 2. **Actions → Shorebird (update tanpa AAB) → Run workflow**, aksi `init` (sekali saja). Simpan isi
    `shorebird.yaml` dari ringkasan run ke `apps/mobile/shorebird.yaml`, dan tambahkan `- shorebird.yaml`
    ke `flutter: assets:` di `pubspec.yaml`.
-3. Aksi `rilis` (isi versi) menghasilkan artefak `sekolahapp-<versi>-<nomor>-shorebird-aab`. Unggah AAB ini
+3. Aksi `rilis` (isi versi) menghasilkan artefak `sekolahapp-<versi>-shorebird-run<nomor>-aab`. Unggah AAB ini
    ke Play Console. Ringkasan run menuliskan versi rilisnya, mis. `1.0.1+12`.
 4. Untuk update berikutnya: gabungkan perubahan ke `main`, lalu aksi `patch` dengan `versi_rilis` tadi.
    Patch hanya berlaku untuk rilis yang dibuat lewat aksi `rilis` Shorebird, bukan AAB dari workflow biasa.
