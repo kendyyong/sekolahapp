@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 
 import '../core/supa.dart';
@@ -170,13 +172,21 @@ class _Backdrop extends StatelessWidget {
             gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF3A6EE8), Color(0xFF173C8F)]),
           ),
         ),
-        Image.asset('assets/images/latar-masuk.jpg', fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+        // Sedikit diburamkan agar teks di atasnya tetap mudah dibaca.
+        ImageFiltered(
+          imageFilter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
+          // Diperbesar sedikit agar tepi yang ikut buram tidak terlihat.
+          child: Transform.scale(
+            scale: 1.04,
+            child: Image.asset('assets/images/latar-masuk.jpg', fit: BoxFit.cover, errorBuilder: (_, _, _) => const SizedBox.shrink()),
+          ),
+        ),
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0x99102A6B), Color(0xCC0E2560), Color(0xF20A1B47)],
+              colors: [Color(0x8C102A6B), Color(0xB30E2560), Color(0xF20A1B47)],
               stops: [0, 0.45, 1],
             ),
           ),
