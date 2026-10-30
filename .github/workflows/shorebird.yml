@@ -144,7 +144,7 @@ jobs:
         env:
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          SHA1_PLAY: 61:FD:56:19:D7:51:84:CA:1F:9F:59:53:8A:14:2C:D4:6E:72:BB:6C
+          SHA1_PLAY: DD:0A:EB:8F:E6:07:90:C2:73:93:C4:70:87:DB:F2:FF:7A:E7:C5:91
         run: |
           sha1() { grep -m1 -oE 'SHA1: *[0-9A-F:]+' | sed 's/SHA1: *//'; }
           KUNCI=$(keytool -list -v -keystore android/app/upload-keystore.jks -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" | sha1)
