@@ -1,0 +1,146 @@
+# Update aplikasi HP tanpa unggah AAB baru (Shorebird code push).
+# Jalankan manual: Actions → "Shorebird (update tanpa AAB)" → Run workflow.
+#
+#   aksi = init     Sekali saja: mendaftarkan aplikasi ke Shorebird. app_id dicetak di ringkasan run,
+#                   lalu disimpan ke apps/mobile/shorebird.yaml lewat PR.
+#   aksi = rilis    Membuat AAB rilis lewat Shorebird (versi dasar). Unggah AAB ini ke Play Console.
+#                   Patch hanya bisa dikirim ke rilis yang dibuat dengan aksi ini.
+#   aksi = patch    Mengirim perubahan kode Dart ke HP pengguna tanpa Play Console. Isi versi_rilis
+#                   dengan versi rilis tujuan, mis. 1.0.0+5 (lihat ringkasan run rilis).
+#                   Perubahan Android (izin, plugin baru, ikon) tetap perlu aksi rilis + unggah AAB.
+#
+# Yang perlu disiapkan: secret SHOREBIRD_TOKEN (Shorebird Console → Account → API Keys), ditambah
+# secret keystore & variabel SUPABASE_* yang sama dengan workflow "Rilis Android (Play Store)".
+name: Shorebird (update tanpa AAB)
+
+on:
+  workflow_dispatch:
+    inputs:
+      aksi:
+        description: init, rilis, atau patch
+        required: true
+        type: choice
+        options: [patch, rilis, init]
+      versi:
+        description: "Untuk rilis: nomor versi yang terlihat pengguna (mis. 1.0.1)"
+        required: false
+        default: 1.0.0
+      versi_rilis:
+        description: "Untuk patch: versi rilis tujuan, mis. 1.0.0+5"
+        required: false
+
+permissions:
+  contents: read
+
+# Versi Flutter yang didukung Shorebird; patch otomatis memakai versi rilisnya.
+env:
+  SHOREBIRD_FLUTTER: 3.47.7
+
+jobs:
+  shorebird:
+    name: Shorebird ${{ inputs.aksi }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    env:
+      SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Periksa rahasia & variabel
+        env:
+          AKSI: ${{ inputs.aksi }}
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+          VERSI: ${{ inputs.versi }}
+          VERSI_RILIS: ${{ inputs.versi_rilis }}
+        run: |
+          [ -n "$SHOREBIRD_TOKEN" ] || { echo "::error::Secret SHOREBIRD_TOKEN belum diisi"; exit 1; }
+          if [ "$AKSI" = init ]; then
+            [ ! -f shorebird.yaml ] || { echo "::error::shorebird.yaml sudah ada; init tidak perlu diulang"; exit 1; }
+            exit 0
+          fi
+          [ -f shorebird.yaml ] || { echo "::error::Jalankan aksi init dulu dan simpan shorebird.yaml"; exit 1; }
+          for v in KEYSTORE SUPABASE_URL SUPABASE_ANON_KEY; do
+            [ -n "${!v}" ] || { echo "::error::Belum diisi: $v"; exit 1; }
+          done
+          if [ "$AKSI" = rilis ]; then
+            [[ "$VERSI" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Versi harus berbentuk 1.2.3"; exit 1; }
+          else
+            [[ "$VERSI_RILIS" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$ ]] || { echo "::error::versi_rilis harus berbentuk 1.2.3+4"; exit 1; }
+          fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: shorebirdtech/setup-shorebird@v1
+        with:
+          cache: true
+
+      - name: Daftarkan aplikasi
+        if: inputs.aksi == 'init'
+        run: |
+          shorebird init
+          {
+            echo "### shorebird.yaml"
+            echo "Simpan berkas ini sebagai apps/mobile/shorebird.yaml (app_id bukan rahasia)."
+            echo '```yaml'
+            cat shorebird.yaml
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat shorebird.yaml
+          git diff -- pubspec.yaml
+
+      - name: Pasang kunci rilis
+        if: inputs.aksi != 'init'
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
+          {
+            echo "storeFile=upload-keystore.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+
+      # versionCode wajib naik di setiap unggahan; nomor run workflow selalu bertambah.
+      - name: Rilis lewat Shorebird
+        if: inputs.aksi == 'rilis'
+        env:
+          VERSI: ${{ inputs.versi }}
+          NOMOR: ${{ github.run_number }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+        run: |
+          shorebird release android --flutter-version="$SHOREBIRD_FLUTTER" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+            -- --build-name="$VERSI" --build-number="$NOMOR"
+          echo "Versi rilis untuk patch: **$VERSI+$NOMOR**. Unggah AAB dari artifact run ini ke Play Console." >> "$GITHUB_STEP_SUMMARY"
+
+      # dart-define harus sama dengan saat rilis agar patch terhubung ke server yang sama.
+      - name: Kirim patch
+        if: inputs.aksi == 'patch'
+        env:
+          VERSI_RILIS: ${{ inputs.versi_rilis }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+        run: |
+          shorebird patch android --release-version="$VERSI_RILIS" \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+          echo "Patch untuk $VERSI_RILIS terkirim. Pengguna menerimanya setelah membuka ulang aplikasi." >> "$GITHUB_STEP_SUMMARY"
+
+      - run: rm -f android/key.properties android/app/upload-keystore.jks
+        if: always()
+      - uses: actions/upload-artifact@v4
+        if: inputs.aksi == 'rilis'
+        with:
+          name: sekolahapp-${{ inputs.versi }}-${{ github.run_number }}-shorebird-aab
+          path: apps/mobile/build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30

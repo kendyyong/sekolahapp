@@ -213,6 +213,19 @@ flutter build appbundle --release \
    Nomor build (`versionCode`) otomatis naik setiap kali dijalankan.
 5. Unduh artefak `sekolahapp-<versi>-<nomor>-aab` dari halaman run, lalu unggah `app-release.aab` ke Play Console.
 
+**Update tanpa AAB baru (Shorebird).** Perubahan kode Dart (tampilan, fitur, perbaikan bug) bisa dikirim
+langsung ke HP pengguna; patch diunduh di latar belakang dan berlaku saat aplikasi dibuka ulang.
+Perubahan sisi Android (izin baru, plugin baru, ikon, versi Flutter) tetap butuh rilis dan unggah AAB.
+1. Daftar di console.shorebird.dev, lalu **Account → API Keys → Create API Key**. Simpan nilainya sebagai
+   secret repo `SHOREBIRD_TOKEN` (kunci hanya tampil sekali).
+2. **Actions → Shorebird (update tanpa AAB) → Run workflow**, aksi `init` (sekali saja). Simpan isi
+   `shorebird.yaml` dari ringkasan run ke `apps/mobile/shorebird.yaml`, dan tambahkan `- shorebird.yaml`
+   ke `flutter: assets:` di `pubspec.yaml`.
+3. Aksi `rilis` (isi versi) menghasilkan artefak `sekolahapp-<versi>-<nomor>-shorebird-aab`. Unggah AAB ini
+   ke Play Console. Ringkasan run menuliskan versi rilisnya, mis. `1.0.1+12`.
+4. Untuk update berikutnya: gabungkan perubahan ke `main`, lalu aksi `patch` dengan `versi_rilis` tadi.
+   Patch hanya berlaku untuk rilis yang dibuat lewat aksi `rilis` Shorebird, bukan AAB dari workflow biasa.
+
 Aktifkan **Play App Signing** saat unggahan pertama (bawaan Play Console). Kunci di atas menjadi *upload key*;
 bila hilang, kunci bisa diganti lewat dukungan Google tanpa kehilangan aplikasi.
 
