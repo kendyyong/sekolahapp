@@ -1,7 +1,8 @@
 const TZ = "Asia/Jakarta";
 
 export function rupiah(n: number | string | null | undefined): string {
-  return "Rp" + Number(n ?? 0).toLocaleString("id-ID");
+  // `|| 0` menormalkan -0 (mis. hasil -sum dari daftar kosong) agar tidak tampil "Rp-0".
+  return "Rp" + (Number(n ?? 0) || 0).toLocaleString("id-ID");
 }
 
 export function tanggal(d: string | Date | null | undefined, withDay = false): string {
