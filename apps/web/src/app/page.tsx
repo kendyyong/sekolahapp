@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { rupiah } from "@/lib/format";
 import { LinkButton, cx } from "@/components/ui";
+import { SiteFooter } from "@/components/public-site";
 
 export const metadata: Metadata = {
   title: "SekolahApp · Satu aplikasi untuk seluruh warga sekolah",
@@ -54,6 +55,7 @@ export default async function Landing() {
         <Link href="/" className="text-xl font-extrabold tracking-tight text-ink">Sekolah<span className="text-accent">App</span></Link>
         <nav className="flex items-center gap-2 text-sm font-semibold">
           <a href="#harga" className="hidden px-3 py-2 text-muted hover:text-ink sm:inline">Harga</a>
+          <Link href="/kontak" className="hidden px-3 py-2 text-muted hover:text-ink sm:inline">Kontak</Link>
           {user ? <LinkButton href="/mulai" variant="primary">Buka dasbor</LinkButton> : <>
             <LinkButton href="/login" variant="ghost">Masuk</LinkButton>
             <LinkButton href="/daftar" variant="primary">Daftar gratis</LinkButton>
@@ -134,8 +136,8 @@ export default async function Landing() {
                   <ul className="mt-4 flex flex-1 flex-col gap-1.5 text-sm text-muted">
                     {(p.modules as string[]).map((m) => <li key={m} className="flex gap-2"><span aria-hidden className="text-good">✓</span>{MODULE_LABEL[m] ?? m}</li>)}
                   </ul>
-                  <LinkButton href="/daftar" variant={featured ? "primary" : "secondary"} className="mt-5">
-                    {p.tier === "enterprise" ? "Ajukan penawaran" : "Mulai"}
+                  <LinkButton href={p.tier === "enterprise" ? "/kontak" : `/berlangganan?paket=${p.tier}`} variant={featured ? "primary" : "secondary"} className="mt-5">
+                    {p.tier === "enterprise" ? "Ajukan penawaran" : p.tier === "free" ? "Mulai gratis" : "Berlangganan"}
                   </LinkButton>
                 </div>
               );
@@ -157,17 +159,7 @@ export default async function Landing() {
         </div>
       </section>
 
-      <footer className="border-t border-line">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-6 text-sm text-muted">
-          <span>© {new Date().getFullYear()} SekolahApp</span>
-          <nav className="flex gap-4">
-            <Link href="/mitra" className="hover:text-ink">Program Affiliator</Link>
-            <Link href="/privasi" className="hover:text-ink">Kebijakan Privasi</Link>
-            <Link href="/syarat" className="hover:text-ink">Syarat Layanan</Link>
-            <Link href="/hapus-akun" className="hover:text-ink">Hapus akun</Link>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
