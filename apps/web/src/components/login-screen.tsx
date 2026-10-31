@@ -20,7 +20,10 @@ async function signIn(fd: FormData) {
     password: String(fd.get("password") ?? ""),
   });
   const next = String(fd.get("next") ?? "");
-  if (error) redirect(from + "?err=" + encodeURIComponent("Email atau kata sandi salah.") + (next ? "&next=" + encodeURIComponent(next) : ""));
+  const msg = error?.code === "email_not_confirmed"
+    ? "Email belum dikonfirmasi. Buka tautan konfirmasi yang kami kirim ke email Anda, lalu masuk lagi."
+    : "Email atau kata sandi salah.";
+  if (error) redirect(from + "?err=" + encodeURIComponent(msg) + (next ? "&next=" + encodeURIComponent(next) : ""));
   // Masuk dari halaman sekolah: langsung pakai peran di sekolah itu bila ada.
   const slug = from.startsWith("/masuk/") ? from.slice(7) : null;
   if (slug) {
